@@ -37,11 +37,10 @@ class Enemies {
   update(){
     this.x += this.vx;
     this.y += this.vy;
-    if(this.y > H){
-      createElementsGame(1);
-    }
   };
 }
+
+
 
 //класс астеройдов
 
@@ -63,13 +62,8 @@ class Asteroids {
   }
   update(){
     this.y += this.speed;
-    if(this.y > H){
-      createElementsGame(1);
-    }
   };
 }
-
-
 
 //создание элементов заданного класса, n-количество, usingClass - класс, arrayElements - массив на выходе
 function createElementsGame(n, usingClass, arrayElements ){
@@ -96,11 +90,14 @@ function createElementsGame(n, usingClass, arrayElements ){
   }
 }
 
-//функция отрисовки и апдейтда, для разных массивов
+//функция отрисовки и апдейтда, для разных массивов, включает удаление, если за пределами
 function drawArray(array) {
-  for(let i = 0, al = array.length; i < al; i++){
+  for(let i = 0; i < array.length; i++){
     array[i].draw();
     array[i].update();
+    if ((array[i].y > H) || (array[i].x > W) || (array[i].x < 0)) {
+      array.splice(i, 1);
+    }
   }
 }
 
