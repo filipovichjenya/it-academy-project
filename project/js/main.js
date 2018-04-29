@@ -8,6 +8,7 @@ canvas.width = W; // canvas ширина
 canvas.height = H - 4; // canvas высота
 const enem = [];  // массив врагов
 const asteroidsArray = []; // массив астеройдов
+const shots = []; // массив пуль
 let rightPressed = false;
 let leftPressed = false;
 
@@ -36,6 +37,27 @@ function keyUpHandler(e) {
 //random (min,max)
 function getRandom(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+//класс пулек
+class Shot {
+  constructor(x,y,w,h){
+    this.x = x;
+    this.y = y;
+    this.w = w;
+    this.h = h;
+    this.speed = getRandom(5,10);
+  }
+  draw(){
+    ctx.beginPath();
+    ctx.fillStyle = 'white';
+    ctx.fillRect(this.x, this.y,this.w,this.h);
+    ctx.fill();
+    ctx.closePath();
+  }
+  update(){
+    this.y += this.speed;
+  };
 }
 
 //класс врагов
