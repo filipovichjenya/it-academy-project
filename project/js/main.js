@@ -2,12 +2,34 @@
 //главные переменные
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext("2d"); //область canvas
-const W =  document.documentElement.clientWidth, // длина окна
-  H =  document.documentElement.clientHeight; // высота окна
+const W =  document.documentElement.clientWidth; // длина окна
+const H =  document.documentElement.clientHeight; // высота окна
 canvas.width = W; // canvas ширина
 canvas.height = H - 4; // canvas высота
-let enem = [];  // массив врагов
-let asteroidsArray = []; // массив астеройдов
+const enem = [];  // массив врагов
+const asteroidsArray = []; // массив астеройдов
+let rightPressed = false;
+let leftPressed = false;
+
+document.addEventListener("keydown", keyDownHandler, false);
+document.addEventListener("keyup", keyUpHandler, false);
+
+function keyDownHandler(e) {
+  if(e.keyCode === 39) {
+    rightPressed = true;
+  }
+  else if(e.keyCode === 37) {
+    leftPressed = true;
+  }
+}
+function keyUpHandler(e) {
+  if(e.keyCode === 39) {
+    rightPressed = false;
+  }
+  else if(e.keyCode === 37) {
+    leftPressed = false;
+  }
+}
 
 
 
@@ -18,14 +40,13 @@ function getRandom(min, max) {
 
 //класс врагов
 class Enemies {
-  constructor(name){
+  constructor(){
     this.x = getRandom(50,W-50);
     this.y = getRandom(-30,-10);
     this.w = 30;
     this.h = 30;
     this.vx = getRandom(-1,1);
     this.vy = getRandom(1,1);
-    this.name = name;
   }
   draw() {
     ctx.beginPath();
@@ -40,14 +61,10 @@ class Enemies {
   };
 }
 
-
-
 //класс астеройдов
-
 class Asteroids {
   constructor(x){
     this.x = x;
-    // this.x = getRandom(100, 200);
     this.y = getRandom(-30,-10);
     this.w = getRandom(20,100);
     this.h = getRandom(20,100);
@@ -62,6 +79,32 @@ class Asteroids {
   }
   update(){
     this.y += this.speed;
+  };
+}
+
+//класс главного героя
+class MainHero {
+  constructor(){
+    this.w = 50;
+    this.h = 50;
+    this.x = W/2;
+    this.y = (H - this.h);
+    this.speed = 7;
+  }
+  draw() {
+    ctx.beginPath();
+    ctx.fillStyle = 'grey';
+    ctx.fillRect(this.x, this.y, this.w, this.h);
+    ctx.fill();
+    ctx.closePath();
+  }
+  update(){
+    if(rightPressed && this.x < W) {
+      this.x += this.speed;
+    }
+    else if(leftPressed && this.x > 0) {
+      this.x -= this.speed;
+    }
   };
 }
 
@@ -102,9 +145,9 @@ function drawArray(array) {
 }
 
 //создание элементов игры
-
 createElementsGame(10, Enemies, enem);
 createElementsGame(3, Asteroids, asteroidsArray);
+const hero = new MainHero();
 
 //функция запуска анимации
 function startAnim(){
@@ -114,9 +157,10 @@ function startAnim(){
 
   drawArray(enem);
   drawArray(asteroidsArray);
+  hero.draw();
+  hero.update();
 
   requestAnimationFrame(startAnim);
-
 }
 startAnim();
 
