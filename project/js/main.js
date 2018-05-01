@@ -7,31 +7,41 @@ const H =  document.documentElement.clientHeight; // высота окна
 canvas.width = W; // canvas ширина
 canvas.height = H - 4; // canvas высота
 const enem = [];  // массив врагов
+const bullets = [];
 const asteroidsArray = []; // массив астеройдов
 let rightPressed = false;
 let leftPressed = false;
+let spacePressed = false;
 
 document.addEventListener("keydown", keyDownHandler, false);
 document.addEventListener("keyup", keyUpHandler, false);
 
 function keyDownHandler(e) {
-  if(e.keyCode === 39) {
-    rightPressed = true;
-  }
-  else if(e.keyCode === 37) {
-    leftPressed = true;
+  switch (e.keyCode) {
+    case 39 :
+      rightPressed = true;
+      break;
+    case 37:
+      leftPressed = true;
+      break;
+    case 32:
+      spacePressed = true;
+      break;
   }
 }
 function keyUpHandler(e) {
-  if(e.keyCode === 39) {
-    rightPressed = false;
-  }
-  else if(e.keyCode === 37) {
-    leftPressed = false;
+  switch (e.keyCode) {
+    case 39 :
+      rightPressed = false;
+      break;
+    case 37:
+      leftPressed = false;
+      break;
+    case 32:
+      spacePressed = false;
+      break;
   }
 }
-
-
 
 //random (min,max)
 function getRandom(min, max) {
@@ -105,29 +115,61 @@ class MainHero {
     else if(leftPressed && this.x > 0) {
       this.x -= this.speed;
     }
+    if (spacePressed) {
+      let midle = this.x + this.w/2;
+      createElementsGame(1, Bullet, bullets, midle, this.y);
+    }
+  };
+}
+
+//класс пуль
+class Bullet {
+  constructor(x, y){
+    this.w = 2;
+    this.h = 2;
+    this.x = x;
+    this.y = y;
+    this.speed = 2;
+  }
+  draw() {
+    ctx.beginPath();
+    ctx.fillStyle = 'white';
+    ctx.fillRect(this.x, this.y, this.w, this.h);
+    ctx.fill();
+    ctx.closePath();
+  }
+  update(){
+    this.y -= this.speed;
   };
 }
 
 //создание элементов заданного класса, n-количество, usingClass - класс, arrayElements - массив на выходе
-function createElementsGame(n, usingClass, arrayElements ){
+function createElementsGame(n, usingClass, arrayElements, ...rest){
   if (n && usingClass && arrayElements){
-    if (usingClass === Asteroids) {
-      let args = 0;
-      for(let i = 0; arrayElements.length < n; i++){
-        args = args + Number(getRandom(0, W / 2));
-        if (args > (W - 100)) {
-          args = W - 100;
+    switch (usingClass.name) {
+      case 'Asteroids':
+        let args = 0;
+        for(let i = 0; arrayElements.length < n; i++){
+          args = args + Number(getRandom(0, W / 2));
+          if (args > (W - 100)) {
+            args = W - 100;
+          }
+          let element = new usingClass(args);
+          arrayElements.push(element);
         }
-        let element = new usingClass(args);
-        arrayElements.push(element);
-      }
-    } else {
-      for(let i = 0; arrayElements.length < n; i++){
-        let element = new usingClass();
-        arrayElements.push(element);
-      }
+        break;
+      case 'Bullet':
+        for(let i = 0; arrayElements.length < n; i++) {
+            let element = new usingClass(rest[0], rest[1]);
+            arrayElements.push(element);
+        }
+        break;
+      default:
+        for(let i = 0; arrayElements.length < n; i++){
+          let element = new usingClass();
+          arrayElements.push(element);
+        }
     }
-
   } else {
     return false;
   }
@@ -159,7 +201,7 @@ function startAnim(){
   drawArray(asteroidsArray);
   hero.draw();
   hero.update();
-
+  drawArray(bullets);
   requestAnimationFrame(startAnim);
 }
 startAnim();
