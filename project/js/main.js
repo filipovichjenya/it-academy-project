@@ -236,4 +236,5 @@ function startAnim(){
   requestAnimationFrame(startAnim);
 }
 startAnim();
+// куку
 
