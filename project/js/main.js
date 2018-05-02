@@ -9,6 +9,7 @@ canvas.height = H - 4; // canvas высота
 const enem = [];  // массив врагов
 const bullets = [];
 const asteroidsArray = []; // массив астеройдов
+const shots = []; // массив пуль
 let rightPressed = false;
 let leftPressed = false;
 let spacePressed = false;
@@ -48,15 +49,40 @@ function getRandom(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
+//класс пулек
+class Shot {
+  constructor(x,y,w,h){
+    this.x = x;
+    this.y = y;
+    this.w = w;
+    this.h = h;
+    this.speed = getRandom(5,10);
+  }
+  draw(){
+    ctx.beginPath();
+    ctx.fillStyle = 'white';
+    ctx.fillRect(this.x, this.y,this.w,this.h);
+    ctx.fill();
+    ctx.closePath();
+  }
+  update(){
+    this.y += this.speed;
+  }
+};
+
 //класс врагов
 class Enemies {
-  constructor(){
-    this.x = getRandom(50,W-50);
-    this.y = getRandom(-30,-10);
-    this.w = 30;
-    this.h = 30;
-    this.vx = getRandom(-1,1);
-    this.vy = getRandom(1,1);
+  constructor(name){
+    let _this = this;
+    _this.x = getRandom(50,W-50);
+    _this.y = getRandom(-30,-10);
+    _this.w = 30;
+    _this.h = 30;
+    _this.vx = getRandom(-1,1);
+    _this.vy = getRandom(1,1);
+    _this.name = name; 
+    setInterval(function(){let i = new Shot(_this.x+_this.w/2,_this.y+_this.h,_this.w/10,_this.h/3);    
+      shots.push(i);},getRandom(1000,3000))   
   }
   draw() {
     ctx.beginPath();
@@ -68,7 +94,11 @@ class Enemies {
   update(){
     this.x += this.vx;
     this.y += this.vy;
-  };
+  }
+  shot(){
+    var i = new Shot(this.x+this.w/2,this.y+this.h,this.w/10,this.h/3);    
+      shots.push(i);            
+  }  
 }
 
 //класс астеройдов
@@ -180,7 +210,7 @@ function drawArray(array) {
   for(let i = 0; i < array.length; i++){
     array[i].draw();
     array[i].update();
-    if ((array[i].y > H) || (array[i].x > W) || (array[i].x < 0)) {
+    if ((array[i].y > H) || (array[i].x > W) || (array[i].x < -31)) {
       array.splice(i, 1);
     }
   }
@@ -199,6 +229,7 @@ function startAnim(){
 
   drawArray(enem);
   drawArray(asteroidsArray);
+  drawArray(shots);
   hero.draw();
   hero.update();
   drawArray(bullets);
