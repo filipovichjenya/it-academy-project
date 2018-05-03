@@ -10,6 +10,8 @@ const enem = [];  // массив врагов
 const bullets = [];
 const asteroidsArray = []; // массив астеройдов
 const shots = []; // массив пуль
+const img1 = new Image(71,53);
+const img2 = new Image(20,35);
 let rightPressed = false;
 let leftPressed = false;
 let spacePressed = false;
@@ -51,17 +53,14 @@ function getRandom(min, max) {
 
 //класс пулек
 class Shot {
-  constructor(x,y,w,h){
-    this.src = 'img/Sprites/Missiles/spaceMissiles_040.png';
-    this.img = new Image(20,35);
-    this.img.src = this.src;
+  constructor(x,y,w,h){    
     this.x = x;
     this.y = y;
     this.speed = getRandom(2,4);
   }
   draw(){
     ctx.save();
-    ctx.drawImage(this.img,this.x,this.y,20,35);
+    ctx.drawImage(img2,this.x,this.y,20,35);
     ctx.restore();
   }
   update(){
@@ -72,14 +71,11 @@ class Shot {
 //класс врагов
 class Enemies {
   constructor(){
-    let _this = this;
-    this.src = 'img/Sprites/Ships/spaceShips_001.png';
-    this.img = new Image(71,53);
-    this.img.src = this.src;
+    let _this = this;   
     this.x = getRandom(50,W-50);
     this.y = getRandom(-30,-10);
-    this.w = this.img.width;
-    this.h = this.img.height;
+    this.w = img1.width;
+    this.h = img1.height;
     this.vx = getRandom(-1,1);
     this.vy = getRandom(.3,.5);
     this.name = name;
@@ -92,7 +88,7 @@ class Enemies {
   }
   draw() {
     ctx.save();
-    ctx.drawImage(this.img,this.x,this.y,71,53);
+    ctx.drawImage(img1,this.x,this.y,71,53);
     ctx.restore();
   }
   update(){
@@ -214,8 +210,9 @@ function drawArray(array) {
   for(let i = 0; i < array.length; i++){
     array[i].draw();
     array[i].update();
-    if ((array[i].y > H) || (array[i].x > W) || (array[i].x < -31)) {
+    if ((array[i].y > H) || (array[i].x > W) || (array[i].x < -100)) {
       array.splice(i, 1);
+      i--;
     }
   }
 }
@@ -228,6 +225,12 @@ function create(){
 setInterval(create,4000);
 const hero = new MainHero();
 
+//инициализация картинок и запуск
+function init(){
+  img1.src = 'img/Sprites/Ships/spaceShips_001.png';
+  img2.src = 'img/Sprites/Missiles/spaceMissiles_040.png';  
+  requestAnimationFrame(startAnim);
+}
 //функция запуска анимации
 function startAnim(){
   ctx.clearRect(0,0,W,H);
@@ -238,11 +241,9 @@ function startAnim(){
   drawArray(asteroidsArray);
   drawArray(shots);
   drawArray(bullets);
-
   hero.draw();
   hero.update();
-
   requestAnimationFrame(startAnim);
 }
-startAnim();
+init();
 
