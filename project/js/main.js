@@ -7,8 +7,8 @@ const H =  document.documentElement.clientHeight; // высота окна
 canvas.width = W; // canvas ширина
 canvas.height = H - 4; // canvas высота
 const enem = [];  // массив врагов
-const asteroidsArray = []; // массив астеройдов
 const bullets = [];
+const asteroidsArray = []; // массив астеройдов
 const shots = []; // массив пуль
 let rightPressed = false;
 let leftPressed = false;
@@ -214,7 +214,7 @@ function drawArray(array) {
   for(let i = 0; i < array.length; i++){
     array[i].draw();
     array[i].update();
-    if ((array[i].y > H) || (array[i].x > W) || (array[i].x < 0)) {
+    if ((array[i].y > H) || (array[i].x > W) || (array[i].x < -31)) {
       array.splice(i, 1);
     }
   }
