@@ -16,6 +16,7 @@ const img2 = new Image(20,35);
 let rightPressed = false;
 let leftPressed = false;
 let spacePressed = false;
+let score = 0;
 
 
 const throttle = (func, limit) => {
@@ -103,7 +104,6 @@ class Enemies {
     this.h = img1.height;
     this.vx = getRandom(-1,1);
     this.vy = getRandom(.3,.5);
-    this.name = name;
     setInterval(
       function(){
         let i = new Shot(_this.x+_this.w/2-10,_this.y+_this.h/1.5);
@@ -248,6 +248,52 @@ function drawArray(array) {
   }
 }
 
+function collides(x, y, r, b, x2, y2, r2, b2) {
+  return !(r <= x2 || x > r2 ||
+    b <= y2 || y > b2);
+}
+
+function boxCollides(pos, size, pos2, size2) {
+  return collides(pos[0], pos[1],
+    pos[0] + size[0], pos[1] + size[1],
+    pos2[0], pos2[1],
+    pos2[0] + size2[0], pos2[1] + size2[1]);
+}
+
+function checkCollisions() {
+  if (enem.length !== 0 && bullets.length !== 0) {
+    for (let i = 0; i < enem.length; i++) {
+      let pos = [];
+      pos.push(enem[i].x);
+      pos.push(enem[i].y);
+      let size = [];
+      size.push(enem[i].w);
+      size.push(enem[i].h);
+      for (let j = 0; j < bullets.length; j++) {
+        let pos2 = [];
+        pos2.push(bullets[j].x);
+        pos2.push(bullets[j].y);
+        let size2 = [];
+        size2.push(bullets[j].w);
+        size2.push(bullets[j].h);
+
+        if (boxCollides(pos, size, pos2, size2)) {
+          // Remove the enemy
+          enem.splice(i, 1);
+          i--;
+
+          // Add score
+          score += 100;
+
+          // Remove the bullet and stop this iteration
+          bullets.splice(j, 1);
+          break;
+        }
+      }
+    }
+
+  }
+}
 //создание элементов игры
 function create(){
   createElementsGame(getRandom(8,10),Enemies,enem);
@@ -274,7 +320,10 @@ function startAnim(){
   drawArray(bullets);
   hero.draw();
   hero.update();
+
+  checkCollisions();
   requestAnimationFrame(startAnim);
+
 }
 init();
 
