@@ -8,6 +8,7 @@ canvas.width = W; // canvas ширина
 canvas.height = H - 4; // canvas высота
 const enem = [];  // массив врагов
 const bullets = [];
+console.log(bullets);
 const asteroidsArray = []; // массив астеройдов
 const shots = []; // массив пуль
 const img1 = new Image(71,53);
@@ -15,6 +16,28 @@ const img2 = new Image(20,35);
 let rightPressed = false;
 let leftPressed = false;
 let spacePressed = false;
+
+
+const throttle = (func, limit) => {
+  let lastFunc;
+  let lastRan;
+  return function() {
+    const context = this;
+    const args = arguments;
+    if (!lastRan) {
+      func.apply(context, args);
+      lastRan = Date.now();
+    } else {
+      clearTimeout(lastFunc);
+      lastFunc = setTimeout(function() {
+        if ((Date.now() - lastRan) >= limit) {
+          func.apply(context, args);
+          lastRan = Date.now();
+        }
+      }, limit - (Date.now() - lastRan));
+    }
+  }
+};
 
 document.addEventListener("keydown", keyDownHandler, false);
 document.addEventListener("keyup", keyUpHandler, false);
@@ -32,6 +55,7 @@ function keyDownHandler(e) {
       break;
   }
 }
+
 function keyUpHandler(e) {
   switch (e.keyCode) {
     case 39 :
@@ -42,6 +66,7 @@ function keyUpHandler(e) {
       break;
     case 32:
       spacePressed = false;
+      console.log(spacePressed);
       break;
   }
 }
@@ -146,8 +171,11 @@ class MainHero {
       this.x -= this.speed;
     }
     if (spacePressed) {
-      let midle = this.x + this.w/2;
-      createElementsGame(1, Bullet, bullets, midle, this.y);
+      spacePressed = false;
+      console.log(spacePressed);
+      let middle = this.x + this.w/2;
+      createBullet(Bullet, bullets, middle, this.y);
+
     }
   };
 }
@@ -172,6 +200,9 @@ class Bullet {
     this.y -= this.speed;
   };
 }
+const createBullet = throttle((Bullet, bullets, middle, y) => {
+  return createElementsGame(1, Bullet, bullets, middle, y);
+}, 200);
 
 //создание элементов заданного класса, n-количество, usingClass - класс, arrayElements - массив на выходе
 function createElementsGame(n, usingClass, arrayElements, ...rest){
@@ -179,7 +210,7 @@ function createElementsGame(n, usingClass, arrayElements, ...rest){
     switch (usingClass.name) {
       case 'Asteroids':
         let args = 0;
-        for(let i = 0; arrayElements.length < n; i++){
+        for(let i = 0; i < n; i++){
           args = args + Number(getRandom(0, W / 2));
           if (args > (W - 100)) {
             args = W - 100;
@@ -189,13 +220,13 @@ function createElementsGame(n, usingClass, arrayElements, ...rest){
         }
         break;
       case 'Bullet':
-        for(let i = 0; arrayElements.length < n; i++) {
+        for(let i = 0; i < n; i++) {
             let element = new usingClass(rest[0], rest[1]);
             arrayElements.push(element);
         }
         break;
       default:
-        for(let i = 0; arrayElements.length < n; i++){
+        for(let i = 0; i < n; i++){
           let element = new usingClass();
           arrayElements.push(element);
         }
@@ -222,7 +253,7 @@ function create(){
   createElementsGame(getRandom(8,10),Enemies,enem);
   createElementsGame(getRandom(1,4),Asteroids,asteroidsArray);
 }
-setInterval(create,4000);
+setTimeout(create,4000);
 const hero = new MainHero();
 
 //инициализация картинок и запуск
