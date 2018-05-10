@@ -104,10 +104,10 @@ class Enemies {
     this.h = img1.height;
     this.vx = getRandom(-1,1);
     this.vy = getRandom(.3,.5);
-    setInterval(
+    this.int = setInterval(
       function(){
-        let i = new Shot(_this.x+_this.w/2-10,_this.y+_this.h/1.5);
-        shots.push(i);
+          let i = new Shot(_this.x+_this.w/2-10,_this.y+_this.h/1.5);
+          shots.push(i);
       },getRandom(2000,4000)
     )
   }
@@ -278,6 +278,8 @@ function checkCollisions() {
         size2.push(bullets[j].h);
 
         if (boxCollides(pos, size, pos2, size2)) {
+          clearInterval(enem[i].int);
+
           // Remove the enemy
           enem.splice(i, 1);
           i--;
@@ -299,7 +301,7 @@ function create(){
   createElementsGame(getRandom(8,10),Enemies,enem);
   createElementsGame(getRandom(1,4),Asteroids,asteroidsArray);
 }
-setTimeout(create,4000);
+setInterval(create,4000);
 const hero = new MainHero();
 
 //инициализация картинок и запуск
