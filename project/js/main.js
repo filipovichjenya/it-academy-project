@@ -8,7 +8,7 @@ canvas.width = W; // canvas ширина
 canvas.height = H - 4; // canvas высота
 const enem = [];  // массив врагов
 const bullets = [];
-console.log(bullets);
+
 const asteroidsArray = []; // массив астеройдов
 const shots = []; // массив пуль
 const img1 = new Image(71,53);
@@ -67,7 +67,6 @@ function keyUpHandler(e) {
       break;
     case 32:
       spacePressed = false;
-      console.log(spacePressed);
       break;
   }
 }
@@ -79,14 +78,16 @@ function getRandom(min, max) {
 
 //класс пулек
 class Shot {
-  constructor(x,y,w,h){    
+  constructor(x,y){
     this.x = x;
     this.y = y;
+    this.w = 20;
+    this.h = 35;
     this.speed = getRandom(2,4);
   }
   draw(){
     ctx.save();
-    ctx.drawImage(img2,this.x,this.y,20,35);
+    ctx.drawImage(img2,this.x,this.y,this.w,this.h);
     ctx.restore();
   }
   update(){
@@ -164,7 +165,7 @@ class MainHero {
     ctx.closePath();
   }
   update(){
-    if(rightPressed && this.x < W) {
+    if(rightPressed && (this.x + this.w) < W) {
       this.x += this.speed;
     }
     else if(leftPressed && this.x > 0) {
@@ -172,7 +173,6 @@ class MainHero {
     }
     if (spacePressed) {
       spacePressed = false;
-      console.log(spacePressed);
       let middle = this.x + this.w/2;
       createBullet(Bullet, bullets, middle, this.y);
 
@@ -260,7 +260,7 @@ function boxCollides(pos, size, pos2, size2) {
     pos2[0] + size2[0], pos2[1] + size2[1]);
 }
 
-function checkCollisions() {
+function checkBulletsCollisions() {
   if (enem.length !== 0 && bullets.length !== 0) {
     for (let i = 0; i < enem.length; i++) {
       let pos = [];
@@ -311,6 +311,45 @@ function init(){
   requestAnimationFrame(startAnim);
 }
 //функция запуска анимации
+let raf;
+
+function gameOver() {
+  if (shots.length !== 0) {
+    for (let i = 0; i < shots.length; i++) {
+      let pos = [];
+      pos.push(shots[i].x);
+      pos.push(shots[i].y);
+      let size = [];
+      size.push(shots[i].w);
+      size.push(shots[i].h);
+
+      let pos2 = [];
+      pos2.push(hero.x);
+      pos2.push(hero.y);
+      let size2 = [];
+      size2.push(hero.w);
+      size2.push(hero.h);
+
+      if (boxCollides(pos, size, pos2, size2)) {
+        return true;
+      }
+      if (shots.length !== 0) {
+        for (let j = 0; j < asteroidsArray.length; j++) {
+          let pos1 = [];
+          pos1.push(asteroidsArray[j].x);
+          pos1.push(asteroidsArray[j].y);
+          let size1 = [];
+          size1.push(asteroidsArray[j].w);
+          size1.push(asteroidsArray[j].h);
+          if (boxCollides(pos1, size1, pos2, size2)) {
+            return true;
+          }
+        }
+      }
+    }
+  }
+}
+
 function startAnim(){
   ctx.clearRect(0,0,W,H);
   ctx.fillStyle = 'black';
@@ -323,9 +362,16 @@ function startAnim(){
   hero.draw();
   hero.update();
 
-  checkCollisions();
-  requestAnimationFrame(startAnim);
 
+  checkBulletsCollisions();
+  raf = requestAnimationFrame(startAnim);
+
+  if (gameOver()) {
+    cancelAnimationFrame(raf);
+  }
 }
+
+
+
 init();
 
