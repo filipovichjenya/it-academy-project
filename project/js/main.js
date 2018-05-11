@@ -354,6 +354,9 @@ function startAnim(){
   ctx.clearRect(0,0,W,H);
   ctx.fillStyle = 'black';
   ctx.fillRect(0,0,W,H);
+  ctx.fillStyle='white';
+  ctx.font = '30px bold Arial';
+  ctx.fillText(score, 100, 25);
 
   drawArray(enem);
   drawArray(asteroidsArray);
