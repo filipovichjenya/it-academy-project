@@ -1,4 +1,5 @@
 'use strict';
+
 //главные переменные
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext("2d"); //область canvas
@@ -8,16 +9,28 @@ canvas.width = W; // canvas ширина
 canvas.height = H - 4; // canvas высота
 const enem = [];  // массив врагов
 const bullets = [];
-
 const asteroidsArray = []; // массив астеройдов
 const shots = []; // массив пуль
-const img1 = new Image(71,53);
-const img2 = new Image(20,35);
+const stars = []; // массив звезд в фоне
+const sprites = new Image();
+const imgEnem = new Image(71,53);
+const imgShots = new Image();
+const imgAsteroids = new Image();
+const smog = new Image();
+const imgAsteroidsSrc = [];
 let rightPressed = false;
 let leftPressed = false;
 let spacePressed = false;
 let score = 0;
+let currentFrame = 1;
+let argsImg = {
+            args1:[1113,485,16,118,-32.5,0,14,118],
+            args2:[1113,485,16,118,-52.5,0,14,118]         
+};
 
+
+
+//-----------------------------------------------------------------------------------//
 
 const throttle = (func, limit) => {
   let lastFunc;
@@ -76,18 +89,38 @@ function getRandom(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
+//класс звезд в фоне
+class Stars {
+  constructor(){
+    this.x = Math.random()*canvas.width;
+    this.y = Math.random()*canvas.height;
+    this.color = 'white';
+    this.size = getRandom(0.2,0.4);
+    this.sizeRatio = getRandom(1,3);
+  }
+  draw(){
+    ctx.save();
+    ctx.fillStyle = this.color;
+    ctx.fillRect(this.x,this.y,this.size*this.sizeRatio,this.size*this.sizeRatio);
+    ctx.restore();
+  }
+  update(){  
+    
+  }
+}
+
 //класс пулек
 class Shot {
   constructor(x,y){
     this.x = x;
     this.y = y;
-    this.w = 20;
-    this.h = 35;
+    this.w = imgShots.width*0.7;
+    this.h = imgShots.height*0.7;
     this.speed = getRandom(2,4);
   }
   draw(){
     ctx.save();
-    ctx.drawImage(img2,this.x,this.y,this.w,this.h);
+    ctx.drawImage(imgShots,this.x,this.y,imgShots.width*0.7,imgShots.height*0.7);
     ctx.restore();
   }
   update(){
@@ -101,47 +134,66 @@ class Enemies {
     let _this = this;   
     this.x = getRandom(50,W-50);
     this.y = getRandom(-30,-10);
-    this.w = img1.width;
-    this.h = img1.height;
+    this.w = imgEnem.width;
+    this.h = imgEnem.height;
     this.vx = getRandom(-1,1);
     this.vy = getRandom(.3,.5);
     this.int = setInterval(
       function(){
-          let i = new Shot(_this.x+_this.w/2-10,_this.y+_this.h/1.5);
+          let i = new Shot(_this.x + _this.w/2-4,_this.y+_this.h/1.5);
           shots.push(i);
       },getRandom(2000,4000)
     )
   }
   draw() {
-    ctx.save();
-    ctx.drawImage(img1,this.x,this.y,71,53);
+
+    ctx.save();  
+    ctx.drawImage(imgEnem,this.x,this.y,71,53);            
+    ctx.translate(this.x,this.y);    
+    ctx.rotate(180 * Math.PI / 180); 
+    ctx.drawImage(sprites,...argsImg.args1);
+    ctx.drawImage(sprites,...argsImg.args2);
+    switch(currentFrame) {
+      case 0:  
+        argsImg.args1 = [540,645,16,118,-32.5,0,14,118];
+        argsImg.args2 = [540,645,16,118,-52.5,0,14,118];
+        currentFrame++;
+        break;              
+      case 1:  
+        argsImg.args1 = [1113,927,11,118,-32.5,0,13,118];
+        argsImg.args2 = [1113,927,11,118,-52.5,0,13,118];
+        currentFrame++;
+        break;        
+      case 2:  
+        argsImg.args1 = [1125,927,6,118,-28.5,0,6,118];
+        argsImg.args2 = [1125,927,6,118,-48.5,0,6,118];
+        currentFrame = 0;
+        break;     
+    };
     ctx.restore();
   }
   update(){
     this.x += this.vx;
     this.y += this.vy;
-  }
-  shot(){
-    let i = new Shot(this.x+this.w/2,this.y+this.h,this.w/10,this.h/3);
-    shots.push(i);
-  }
+  }  
 }
 
 //класс астеройдов
 class Asteroids {
   constructor(x){
     this.x = x;
-    this.y = getRandom(-60,-40);
-    this.w = getRandom(20,100);
-    this.h = getRandom(20,100);
-    this.speed = 0.3;
+    this.y = getRandom(-440,-210);
+    this.w = imgAsteroids.width;
+    this.h = imgAsteroids.height;
+    this.speed = getRandom(0.2,0.6);
+    this.sizeObject = getRandom(0.3,0.5);
   }
   draw() {
-    ctx.beginPath();
-    ctx.fillStyle = 'yellow';
-    ctx.fillRect(this.x, this.y, this.w, this.h);
-    ctx.fill();
-    ctx.closePath();
+    ctx.save();              
+    //ctx.translate(this.x,this.y);    
+    //ctx.rotate(180 * Math.PI / 180); 
+    ctx.drawImage(imgAsteroids,this.x,this.y,imgAsteroids.width*this.sizeObject,imgAsteroids.height*this.sizeObject);        
+    ctx.restore();
   }
   update(){
     this.y += this.speed;
@@ -158,11 +210,11 @@ class MainHero {
     this.speed = 7;
   }
   draw() {
-    ctx.beginPath();
-    ctx.fillStyle = 'grey';
+    ctx.save();
+    ctx.fillStyle = 'red';
     ctx.fillRect(this.x, this.y, this.w, this.h);
     ctx.fill();
-    ctx.closePath();
+    ctx.restore();
   }
   update(){
     if(rightPressed && (this.x + this.w) < W) {
@@ -187,14 +239,14 @@ class Bullet {
     this.h = 2;
     this.x = x;
     this.y = y;
-    this.speed = 2;
+    this.speed = 3;
   }
   draw() {
-    ctx.beginPath();
+    ctx.save();
     ctx.fillStyle = 'white';
     ctx.fillRect(this.x, this.y, this.w, this.h);
     ctx.fill();
-    ctx.closePath();
+    ctx.restore();
   }
   update(){
     this.y -= this.speed;
@@ -216,7 +268,9 @@ function createElementsGame(n, usingClass, arrayElements, ...rest){
             args = W - 100;
           }
           let element = new usingClass(args);
-          arrayElements.push(element);
+          if(arrayElements.length < 3){
+            arrayElements.push(element);
+          }          
         }
         break;
       case 'Bullet':
@@ -237,7 +291,7 @@ function createElementsGame(n, usingClass, arrayElements, ...rest){
 }
 
 //функция отрисовки и апдейтда, для разных массивов, включает удаление, если за пределами
-function drawArray(array) {
+function drawArray(array) {  
   for(let i = 0; i < array.length; i++){
     array[i].draw();
     array[i].update();
@@ -246,19 +300,19 @@ function drawArray(array) {
       i--;
     }
   }
-}
+};
 
 function collides(x, y, r, b, x2, y2, r2, b2) {
   return !(r <= x2 || x > r2 ||
     b <= y2 || y > b2);
-}
+};
 
 function boxCollides(pos, size, pos2, size2) {
   return collides(pos[0], pos[1],
     pos[0] + size[0], pos[1] + size[1],
     pos2[0], pos2[1],
     pos2[0] + size2[0], pos2[1] + size2[1]);
-}
+};
 
 function checkBulletsCollisions() {
   if (enem.length !== 0 && bullets.length !== 0) {
@@ -295,19 +349,24 @@ function checkBulletsCollisions() {
     }
 
   }
-}
+};
 //создание элементов игры
-function create(){
-  createElementsGame(getRandom(8,10),Enemies,enem);
-  createElementsGame(getRandom(1,4),Asteroids,asteroidsArray);
+function create(){  
+  createElementsGame(getRandom(1,1),Enemies,enem); 
+  createElementsGame(getRandom(0,3),Asteroids,asteroidsArray); 
 }
-setInterval(create,4000);
+setInterval(create,3000);
+createElementsGame(250,Stars,stars);
 const hero = new MainHero();
 
 //инициализация картинок и запуск
 function init(){
-  img1.src = 'img/Sprites/Ships/spaceShips_001.png';
-  img2.src = 'img/Sprites/Missiles/spaceMissiles_040.png';  
+  //back.src = 'img/a.jpg'
+  imgEnem.src = 'img/Sprites/Ships/spaceShips_001.png';
+  imgShots.src = 'img/Sprites/Missiles/spaceMissiles_015.png';  
+  sprites.src = 'img/sprites.png';
+  imgAsteroids.src = 'img/Sprites/Meteors/spaceMeteors_001.png';
+  smog.src = 'img/a.png'
   requestAnimationFrame(startAnim);
 }
 //функция запуска анимации
@@ -342,7 +401,7 @@ function gameOver() {
           size1.push(asteroidsArray[j].w);
           size1.push(asteroidsArray[j].h);
           if (boxCollides(pos1, size1, pos2, size2)) {
-            return true;
+            //return true;
           }
         }
       }
@@ -350,16 +409,21 @@ function gameOver() {
   }
 }
 
-function startAnim(){
-  ctx.clearRect(0,0,W,H);
+
+
+function startAnim(){  
+   
+  ctx.clearRect(0,0,W,H);  
   ctx.fillStyle = 'black';
   ctx.fillRect(0,0,W,H);
+  drawArray(stars);
+  ctx.drawImage(smog,-1150,-400,smog.width*2.5,smog.height*2.5)// фон (косяк, обновляется каждый фрэйм)
   ctx.fillStyle='white';
   ctx.font = '30px bold Arial';
   ctx.fillText(score, 100, 25);
 
-  drawArray(enem);
   drawArray(asteroidsArray);
+  drawArray(enem);  
   drawArray(shots);
   drawArray(bullets);
   hero.draw();
@@ -377,4 +441,5 @@ function startAnim(){
 
 
 init();
+
 
