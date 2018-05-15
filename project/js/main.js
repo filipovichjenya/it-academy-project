@@ -146,7 +146,6 @@ class Enemies {
     )
   }
   draw() {
-
     ctx.save();  
     ctx.drawImage(imgEnem,this.x,this.y,71,53);            
     ctx.translate(this.x,this.y);    
@@ -169,7 +168,7 @@ class Enemies {
         argsImg.args2 = [1125,927,6,118,-48.5,0,6,118];
         currentFrame = 0;
         break;     
-    };
+    }
     ctx.restore();
   }
   update(){
@@ -300,19 +299,19 @@ function drawArray(array) {
       i--;
     }
   }
-};
+}
 
 function collides(x, y, r, b, x2, y2, r2, b2) {
   return !(r <= x2 || x > r2 ||
     b <= y2 || y > b2);
-};
+}
 
 function boxCollides(pos, size, pos2, size2) {
   return collides(pos[0], pos[1],
     pos[0] + size[0], pos[1] + size[1],
     pos2[0], pos2[1],
     pos2[0] + size2[0], pos2[1] + size2[1]);
-};
+}
 
 function checkBulletsCollisions() {
   if (enem.length !== 0 && bullets.length !== 0) {
@@ -349,7 +348,7 @@ function checkBulletsCollisions() {
     }
 
   }
-};
+}
 //создание элементов игры
 function create(){  
   createElementsGame(getRandom(1,1),Enemies,enem); 
@@ -361,12 +360,12 @@ const hero = new MainHero();
 
 //инициализация картинок и запуск
 function init(){
-  //back.src = 'img/a.jpg'
+  //back.src = 'img/a.jpg';
   imgEnem.src = 'img/Sprites/Ships/spaceShips_001.png';
   imgShots.src = 'img/Sprites/Missiles/spaceMissiles_015.png';  
   sprites.src = 'img/sprites.png';
   imgAsteroids.src = 'img/Sprites/Meteors/spaceMeteors_001.png';
-  smog.src = 'img/a.png'
+  smog.src = 'img/a.png';
   requestAnimationFrame(startAnim);
 }
 //функция запуска анимации
@@ -417,9 +416,9 @@ function startAnim(){
   ctx.fillStyle = 'black';
   ctx.fillRect(0,0,W,H);
   drawArray(stars);
-  ctx.drawImage(smog,-1150,-400,smog.width*2.5,smog.height*2.5)// фон (косяк, обновляется каждый фрэйм)
+  ctx.drawImage(smog,-1150,-400,smog.width*2.5,smog.height*2.5); // фон (косяк, обновляется каждый фрэйм)
   ctx.fillStyle='white';
-  ctx.font = '30px bold Arial';
+  ctx.font = 'bold 30px Arial';
   ctx.fillText(score, 100, 25);
 
   drawArray(asteroidsArray);
@@ -438,8 +437,33 @@ function startAnim(){
   }
 }
 
+function validationFrom() {
+  let startButton = document.getElementById('btn-start');
+  let name = document.getElementById('name');
+  let nameValue = name.value;
+  let mainScreen = document.querySelector('.main-screen');
+  if (!nameValue) {
+    alert('dfd');
+  } else {
+    canvas.style.display = 'block';
+    mainScreen.style.display = 'none';
+    init();
+  }
 
 
-init();
+  event.preventDefault();
+}
+
+
+
+function startGame() {
+  let form = document.getElementById('start-form');
+
+  // event.preventDefault();
+
+  form.addEventListener('submit', validationFrom);
+}
+startGame();
+// init();
 
 
