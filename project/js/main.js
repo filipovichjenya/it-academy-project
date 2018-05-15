@@ -436,14 +436,16 @@ function startAnim(){
     cancelAnimationFrame(raf);
   }
 }
-
+let inform = document.createElement('p');
+inform.className = 'inform';
 function validationFrom() {
   let startButton = document.getElementById('btn-start');
   let name = document.getElementById('name');
   let nameValue = name.value;
   let mainScreen = document.querySelector('.main-screen');
   if (!nameValue) {
-    alert('dfd');
+    inform.innerHTML = 'The field can\'t be empty';
+    form.insertBefore(inform, startButton);
   } else {
     canvas.style.display = 'block';
     mainScreen.style.display = 'none';
@@ -454,10 +456,10 @@ function validationFrom() {
   event.preventDefault();
 }
 
-
+let form = document.getElementById('start-form');
 
 function startGame() {
-  let form = document.getElementById('start-form');
+
 
   // event.preventDefault();
 
