@@ -24,14 +24,12 @@ let leftPressed = false;
 let spacePressed = false;
 let score = 0;
 let currentFrame = 1;
+let gameSpeed = 0;
 let argsImg = {
             args1:[1113,485,16,118,-32.5,0,14,118],
             args2:[1113,485,16,118,-52.5,0,14,118]         
 };
-let gameSpeed = 0;
-
-
-
+location.hash = '';
 //-----------------------------------------------------------------------------------//
 
 const throttle = (func, limit) => {
@@ -362,13 +360,13 @@ function init(){
   //back.src = 'img/a.jpg';
   imgEnem.src = 'img/Sprites/Ships/spaceShips_001.png';
   imgMainHero.src = 'img/Sprites/Ships/spaceShips_009.png';
-  imgShots.src = 'img/Sprites/Missiles/spaceMissiles_015.png';  
+  imgShots.src = 'img/Sprites/Missiles/spaceMissiles_015.png';
   sprites.src = 'img/sprites.png';
   imgAsteroids.src = 'img/Sprites/Meteors/spaceMeteors_001.png';
   smog.src = 'img/a.png';
   requestAnimationFrame(startAnim);
 }
-//функция запуска анимации
+
 let raf;
 
 function gameOver() {
@@ -407,12 +405,9 @@ function gameOver() {
     }
   }
 }
-
-
-
-function startAnim(){  
-   
-  ctx.clearRect(0,0,W,H);  
+//функция запуска анимации
+function startAnim(){
+  ctx.clearRect(0,0,W,H);
   ctx.fillStyle = 'black';
   ctx.fillRect(0,0,W,H);
   drawArray(stars);
@@ -420,50 +415,92 @@ function startAnim(){
   ctx.fillStyle='white';  
 
   drawArray(asteroidsArray);
-  drawArray(enem);  
+  drawArray(enem);
   drawArray(shots);
   drawArray(bullets);
   hero.draw();
   hero.update();
 
+
   ctx.font = 'bold 30px Arial';
   ctx.fillText(score, 100, 25);
-  
-
-
+ 
   checkBulletsCollisions();
   raf = requestAnimationFrame(startAnim);
 
   if (gameOver()) {
     cancelAnimationFrame(raf);
+    new RestartGame();
   }
 }
-let inform = document.createElement('p');
-inform.className = 'inform';
-function validationFrom() {
-  let startButton = document.getElementById('btn-start');
-  let name = document.getElementById('name');
-  let nameValue = name.value;
-  let mainScreen = document.querySelector('.main-screen');
-  if (!nameValue) {
-    inform.innerHTML = 'The field can\'t be empty';
-    form.insertBefore(inform, startButton);
-  } else {
-    canvas.style.display = 'block';
-    mainScreen.style.display = 'none';
+cancelAnimationFrame(raf);
+class RestartGame {
+  constructor() {
+    this.restartScreen = document.querySelector('.restart');
+    this.restartButton = document.querySelector('#restart-btn');
+    this.quitButton = document.querySelector('#quit-btn');
+    this.restartScreen.style.display = 'block';
+    this.youScore = document.createElement('p');
+    this.youScore.innerHTML = `Your score: ${score}`;
+    this.restartScreen.insertBefore(this.youScore, this.restartButton);
+    this.quitButton.addEventListener('click', this.quit.bind(this));
+    this.restartButton.addEventListener('click', this.restart);
+  }
+  quit() {
+    clearInterval(raf);
+    this.restartScreen.style.display = 'none';
+    window.history.back();
+    window.location.reload();
+  }
+  restart() {
+    cancelAnimationFrame(raf);
     init();
   }
-
-
-  event.preventDefault();
 }
 
-let form = document.getElementById('start-form');
+class StartGame {
+  constructor(cvs) {
+    this.cvs = cvs;
+    this.mainScreen = document.querySelector('.main-screen');
+    this.form = document.getElementById('start-form');
+    this.startButton = document.getElementById('btn-start');
+    this.name = document.getElementById('name');
+    this.inform = document.createElement('p');
+    this.form.addEventListener('submit', this.validationFrom.bind(this));
+    this.inform.innerHTML = '';
+    this.inform.className = 'inform';
 
-function startGame() {
+    window.onhashchange = this.madeRouting.bind(this);
+  }
+  validationFrom() {
+    this.nameValue = this.name.value;
+    if (!this.nameValue) {
+      this.inform.innerHTML = 'The field can\'t be empty';
+      this.form.insertBefore(this.inform, this.startButton);
+    } else {
+      // this.setLocation('game');
+      location.hash = 'game';
+    }
+    event.preventDefault();
+  }
+  madeRouting() {
+    this.myHash = window.location.hash;
+    if (!this.myHash || this.myHash === '#' ) {
+      this.cvs.style.display = 'none';
+      this.mainScreen.style.display = 'flex';
+      clearInterval(raf);
+    }
+    if (this.myHash === '#game') {
+      this.cvs.style.display = 'block';
+      this.mainScreen.style.display = 'none';
+      init();
+    }
+  }
+}
+
+const SG = new StartGame(canvas);
 
 
-  // event.preventDefault();
 
   form.addEventListener('submit', validationFrom);
 }
