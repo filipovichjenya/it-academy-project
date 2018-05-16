@@ -16,6 +16,7 @@ const sprites = new Image();
 const imgEnem = new Image(71,53);
 const imgShots = new Image();
 const imgAsteroids = new Image();
+const imgMainHero = new Image();
 const smog = new Image();
 const imgAsteroidsSrc = [];
 let rightPressed = false;
@@ -23,14 +24,12 @@ let leftPressed = false;
 let spacePressed = false;
 let score = 0;
 let currentFrame = 1;
+let gameSpeed = 0;
 let argsImg = {
             args1:[1113,485,16,118,-32.5,0,14,118],
             args2:[1113,485,16,118,-52.5,0,14,118]         
 };
 location.hash = '';
-
-
-
 //-----------------------------------------------------------------------------------//
 
 const throttle = (func, limit) => {
@@ -117,7 +116,7 @@ class Shot {
     this.y = y;
     this.w = imgShots.width*0.7;
     this.h = imgShots.height*0.7;
-    this.speed = getRandom(2,4);
+    this.speed = getRandom(2,4)+gameSpeed;
   }
   draw(){
     ctx.save();
@@ -134,7 +133,7 @@ class Enemies {
   constructor(){
     let _this = this;   
     this.x = getRandom(50,W-50);
-    this.y = getRandom(-30,-10);
+    this.y = getRandom(-40,-30);
     this.w = imgEnem.width;
     this.h = imgEnem.height;
     this.vx = getRandom(-1,1);
@@ -203,18 +202,16 @@ class Asteroids {
 //класс главного героя
 class MainHero {
   constructor(){
-    this.w = 50;
-    this.h = 50;
+    this.w = 114;
+    this.h = 82;
     this.x = W/2;
     this.y = (H - this.h);
-    this.speed = 7;
+    this.speed = 7;    
   }
   draw() {
     ctx.save();
-    ctx.fillStyle = 'red';
-    ctx.fillRect(this.x, this.y, this.w, this.h);
-    ctx.fill();
-    ctx.restore();
+    ctx.drawImage(imgMainHero,this.x,this.y);
+    ctx.restore();    
   }
   update(){
     if(rightPressed && (this.x + this.w) < W) {
@@ -224,10 +221,8 @@ class MainHero {
       this.x -= this.speed;
     }
     if (spacePressed) {
-      spacePressed = false;
-      let middle = this.x + this.w/2;
-      createBullet(Bullet, bullets, middle, this.y);
-
+      spacePressed = false;      
+      createBullet(Bullet, bullets, this.x+this.w/6, this.y);      
     }
   };
 }
@@ -235,16 +230,16 @@ class MainHero {
 //класс пуль
 class Bullet {
   constructor(x, y){
-    this.w = 2;
-    this.h = 2;
+    this.w = 3;
+    this.h = 7;
     this.x = x;
     this.y = y;
-    this.speed = 3;
+    this.speed = 4;
   }
   draw() {
     ctx.save();
-    ctx.fillStyle = 'white';
-    ctx.fillRect(this.x, this.y, this.w, this.h);
+    ctx.fillStyle = 'pink';
+    ctx.fillRect(this.x, this.y, this.w, this.h);    
     ctx.fill();
     ctx.restore();
   }
@@ -252,9 +247,9 @@ class Bullet {
     this.y -= this.speed;
   };
 }
-const createBullet = throttle((Bullet, bullets, middle, y) => {
-  return createElementsGame(1, Bullet, bullets, middle, y);
-}, 200);
+const createBullet = throttle((Bullet, bullets, x, y) => {
+  return createElementsGame(1, Bullet, bullets, x, y),createElementsGame(1, Bullet, bullets, x+74, y);
+}, 100);
 
 //создание элементов заданного класса, n-количество, usingClass - класс, arrayElements - массив на выходе
 function createElementsGame(n, usingClass, arrayElements, ...rest){
@@ -276,7 +271,7 @@ function createElementsGame(n, usingClass, arrayElements, ...rest){
       case 'Bullet':
         for(let i = 0; i < n; i++) {
             let element = new usingClass(rest[0], rest[1]);
-            arrayElements.push(element);
+            arrayElements.push(element);            
         }
         break;
       default:
@@ -336,12 +331,12 @@ function checkBulletsCollisions() {
 
           // Remove the enemy
           enem.splice(i, 1);
-          i--;
-
+          i--; 
           // Add score
           score += 100;
-
-          // Remove the bullet and stop this iteration
+          //Скорость игры ++
+          gameSpeed += 0.05; 
+                    // Remove the bullet and stop this iteration
           bullets.splice(j, 1);
           break;
         }
@@ -352,17 +347,19 @@ function checkBulletsCollisions() {
 }
 //создание элементов игры
 function create(){  
-  createElementsGame(getRandom(1,1),Enemies,enem); 
+  createElementsGame(getRandom(1,1+Math.floor(gameSpeed)),Enemies,enem); 
   createElementsGame(getRandom(0,3),Asteroids,asteroidsArray); 
 }
 setInterval(create,3000);
-createElementsGame(250,Stars,stars);
+createElementsGame(canvas.width/3,Stars,stars);
+
 const hero = new MainHero();
 
 //инициализация картинок и запуск
 function init(){
   //back.src = 'img/a.jpg';
   imgEnem.src = 'img/Sprites/Ships/spaceShips_001.png';
+  imgMainHero.src = 'img/Sprites/Ships/spaceShips_009.png';
   imgShots.src = 'img/Sprites/Missiles/spaceMissiles_015.png';
   sprites.src = 'img/sprites.png';
   imgAsteroids.src = 'img/Sprites/Meteors/spaceMeteors_001.png';
@@ -415,9 +412,7 @@ function startAnim(){
   ctx.fillRect(0,0,W,H);
   drawArray(stars);
   ctx.drawImage(smog,-1150,-400,smog.width*2.5,smog.height*2.5); // фон (косяк, обновляется каждый фрэйм)
-  ctx.fillStyle='white';
-  ctx.font = 'bold 30px Arial';
-  ctx.fillText(score, 100, 25);
+  ctx.fillStyle='white';  
 
   drawArray(asteroidsArray);
   drawArray(enem);
@@ -426,6 +421,10 @@ function startAnim(){
   hero.draw();
   hero.update();
 
+
+  ctx.font = 'bold 30px Arial';
+  ctx.fillText(score, 100, 25);
+ 
   checkBulletsCollisions();
   raf = requestAnimationFrame(startAnim);
 
@@ -502,6 +501,8 @@ class StartGame {
 const SG = new StartGame(canvas);
 
 
+
+  form.addEventListener('submit', validationFrom);
+}
+startGame();
 // init();
-
-
