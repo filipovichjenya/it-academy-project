@@ -1,6 +1,29 @@
 'use strict';
 
+let requestAnimFrame = (function(){
+	return  window.requestAnimationFrame       || 
+		window.webkitRequestAnimationFrame || 
+		window.mozRequestAnimationFrame    || 
+		window.oRequestAnimationFrame      || 
+		window.msRequestAnimationFrame     ||  
+		function( callback ){
+			return window.setTimeout(callback, 1000 / 60);
+		};
+})();
+
+
+let cancelRequestAnimFrame = ( function() {
+	return window.cancelAnimationFrame          ||
+		window.webkitCancelRequestAnimationFrame    ||
+		window.mozCancelRequestAnimationFrame       ||
+		window.oCancelRequestAnimationFrame     ||
+		window.msCancelRequestAnimationFrame        ||
+		clearTimeout
+} )();
+
+
 //главные переменные
+var start;
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext("2d"); //область canvas
 const W =  document.documentElement.clientWidth; // длина окна
@@ -26,13 +49,19 @@ let score = 0;
 let currentFrame = 1;
 let gameSpeed = 0;
 let lives = 3;
+let crt;
 let argsImg = {
             args1:[1113,485,16,118,-32.5,0,14,118],
             args2:[1113,485,16,118,-52.5,0,14,118]
 };
 location.hash = '';
+let over = 0;
 //-----------------------------------------------------------------------------------//
-
+function restart(crt){
+  btn = new StartBtn;   
+  init();   
+}
+//--------------------------//
 const throttle = (func, limit) => {
   let lastFunc;
   let lastRan;
@@ -89,6 +118,40 @@ function keyUpHandler(e) {
 function getRandom(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
+
+// кнопка Start
+class StartBtn {
+  constructor(){
+    this.w = 100;
+	  this.h = 50;
+	  this.x = W/2 - 50;
+  	this.y = H/2 - 25;
+  }
+	drawS() {
+		ctx.strokeStyle = "white";
+		ctx.lineWidth = "2";
+		ctx.strokeRect(this.x, this.y, this.w, this.h);
+		
+		ctx.font = "18px Arial, sans-serif";
+		ctx.textAlign = "center";
+		ctx.textBaseline = "middle";
+		ctx.fillStlye = "white";
+		ctx.fillText("Start", W/2, H/2 );
+  }
+  drawR() {
+		ctx.strokeStyle = "white";
+		ctx.lineWidth = "2";
+		ctx.strokeRect(this.x, this.y, this.w, this.h);
+		
+		ctx.font = "18px Arial, sans-serif";
+		ctx.textAlign = "center";
+		ctx.textBaseline = "middle";
+		ctx.fillStlye = "white";
+		ctx.fillText("Restart", W/2, H/2 );
+  }    
+}
+let btn = new StartBtn;
+// 
 
 //класс звезд в фоне
 class Stars {
@@ -337,39 +400,14 @@ function checkBulletsCollisions() {
           //Скорость игры ++
           gameSpeed += 0.05;
                     // Remove the bullet and stop this iteration
-          bullets.splice(j, 1);
+          bullets.splice(j, 1);                 
           break;
         }
       }
     }
-
   }
 }
-//создание элементов игры
-function create(){
-  createElementsGame(getRandom(1,1+Math.floor(gameSpeed)),Enemies,enem);
-  createElementsGame(getRandom(0,3),Asteroids,asteroidsArray);
-}
-requestInterval(create,3000);
-createElementsGame(canvas.width/3,Stars,stars);
-
-const hero = new MainHero();
-
-//инициализация картинок и запуск
-function init(){
-  //back.src = 'img/a.jpg';
-  imgEnem.src = 'img/Sprites/Ships/spaceShips_001.png';
-  imgMainHero.src = 'img/Sprites/Ships/spaceShips_009.png';
-  imgShots.src = 'img/Sprites/Missiles/spaceMissiles_015.png';
-  sprites.src = 'img/sprites.png';
-  imgAsteroids.src = 'img/Sprites/Meteors/spaceMeteors_001.png';
-  smog.src = 'img/a.png';
-  requestAnimationFrame(startAnim);
-}
-
-let raf;
-
-function gameOver() {
+function checkHeroColision(){
   if (shots.length !== 0) {
     for (let i = 0; i < shots.length; i++) {
       let pos = [];
@@ -387,26 +425,62 @@ function gameOver() {
       size2.push(hero.h);
 
       if (boxCollides(pos, size, pos2, size2)) {
-        return true;
-      }
-      if (shots.length !== 0) {
-        for (let j = 0; j < asteroidsArray.length; j++) {
-          let pos1 = [];
-          pos1.push(asteroidsArray[j].x);
-          pos1.push(asteroidsArray[j].y);
-          let size1 = [];
-          size1.push(asteroidsArray[j].w);
-          size1.push(asteroidsArray[j].h);
-          if (boxCollides(pos1, size1, pos2, size2)) {
-            //return true;
-          }
-        }
+          over = 1;
+          break;
+
       }
     }
   }
 }
+
+let gameOver = function(){
+  
+  if(over === 1){
+    cancelRequestAnimFrame(start);
+    clearRequestInterval(crt);
+    for(let i = 0; i < enem.length; i++){
+      clearRequestInterval(enem[i].int);
+      enem.splice(i, 1);
+      i--;
+    }
+    enem = [];  
+    bullets = [];
+    asteroidsArray = []; 
+    shots = [];
+    score = 0;
+    gameSpeed = 0;
+    btn.drawR();
+    over = 0;
+  }
+}
+
+//создание элементов игры
+function create(){
+  createElementsGame(getRandom(1,1+Math.floor(gameSpeed)),Enemies,enem);
+  createElementsGame(getRandom(0,3),Asteroids,asteroidsArray);  
+}
+createElementsGame(canvas.width/3,Stars,stars);
+
+const hero = new MainHero();
+
+//инициализация картинок и запуск
+function init(){
+  //back.src = 'img/a.jpg';
+  imgEnem.src = 'img/Sprites/Ships/spaceShips_001.png';
+  imgMainHero.src = 'img/Sprites/Ships/spaceShips_009.png';
+  imgShots.src = 'img/Sprites/Missiles/spaceMissiles_015.png';
+  sprites.src = 'img/sprites.png';
+  imgAsteroids.src = 'img/Sprites/Meteors/spaceMeteors_001.png';
+  smog.src = 'img/a.png';
+  over = 0;  
+  crt = requestInterval(create,3000);
+  requestAnimFrame(startAnim);
+}
+
+
 //функция запуска анимации
 function startAnim(){
+  
   ctx.clearRect(0,0,W,H);
   ctx.fillStyle = 'black';
   ctx.fillRect(0,0,W,H);
@@ -424,123 +498,35 @@ function startAnim(){
 
   ctx.font = 'bold 30px Arial';
   ctx.fillText(score, 100, 25);
-  ctx.fillText(lives, 100, 70);
-
+  //ctx.fillText(lives, 100, 70);
+  start = requestAnimFrame(startAnim);
   checkBulletsCollisions();
-  raf = requestAnimationFrame(startAnim);
-
-  if (gameOver() && !lives) {
-    cancelAnimationFrame(raf);
-    new RestartGame();
-  } else if (gameOver()) {
-    lives--;
-    const restartClass = new RestartGame();
-    restartClass.restart();
-  }
+  checkHeroColision()
+  gameOver();
 }
 
-cancelAnimationFrame(raf);
-
-class RestartGame {
-  constructor() {
-    this.mainHero = new MainHero;
-    this.enemies = new Enemies;
-    this.restartScreen = document.querySelector('.restart');
-    this.restartButton = document.querySelector('#restart-btn');
-    this.quitButton = document.querySelector('#quit-btn');
-    this.restartScreen.style.display = 'block';
-    this.youScore = document.createElement('p');
-    this.youScore.innerHTML = `Your score: ${score}`;
-    this.restartScreen.insertBefore(this.youScore, this.restartButton);
-    this.quitButton.addEventListener('click', this.quit.bind(this));
-    this.restartButton.addEventListener('click', this.restart.bind(this));
-  }
-  quit() {
-    cancelAnimationFrame(raf);
-    this.restartScreen.style.display = 'none';
-    window.history.back();
-    window.location.reload();
-  }
-  restart() {
-    this.restartScreen.style.display = 'none';
-    score = 0;
-    clearRequestInterval(this.enemies.int);
-    enem = [];
-    bullets = [];
-    shots = [];
-    this.mainHero.x = W/2;
-    this.mainHero.y = (H - this.mainHero.h);
-    init();
-  }
-}
-
-class StartGame {
-  constructor(cvs) {
-    this.cvs = cvs;
-    this.mainScreen = document.querySelector('.main-screen');
-    this.form = document.getElementById('start-form');
-    this.startButton = document.getElementById('btn-start');
-    this.name = document.getElementById('name');
-    this.inform = document.createElement('p');
-    this.form.addEventListener('submit', this.validationFrom.bind(this));
-    this.inform.innerHTML = '';
-    this.inform.className = 'inform';
-    this.pageHash = 'new-game';
-    window.onhashchange = this.madeRoutingHash.bind(this);
-    window.onpopstate = this.madeRoutingLocation(event);
-  }
-  validationFrom() {
-    this.nameValue = this.name.value;
-    if (!this.nameValue) {
-      this.inform.innerHTML = 'The field can\'t be empty';
-      this.form.insertBefore(this.inform, this.startButton);
-    } else {
-      this.setLocation(this.pageHash);
-    }
-    event.preventDefault();
-  }
-  madeRoutingHash() {
-    this.myHash = window.location.hash;
-    if (!this.myHash || this.myHash === '#' ) {
-      this.cvs.style.display = 'none';
-      this.mainScreen.style.display = 'flex';
-      cancelAnimationFrame(raf);
-    }
-    if (this.myHash === ('#' + this.pageHash)) {
-      this.cvs.style.display = 'block';
-      this.mainScreen.style.display = 'none';
-      init();
+canvas.addEventListener("mousedown",btnClick, true);
+//document.getElementById('start-form').addEventListener('submit', validationFrom);
+function btnClick(e) {
+    var mx = e.pageX,
+        my = e.pageY;
+    if(mx >= btn.x && mx <= btn.x + btn.w) {
+      btn = null;
+      restart();
     }
   }
-  madeRoutingLocation(event) {
-    if (event) {
-      this.pageHash = 'new-game';
-      if (e.state.page === this.pageHash) {
-        this.cvs.style.display = 'block';
-        this.mainScreen.style.display = 'none';
-        init();
-      } else if (!e.state) {
-        this.cvs.style.display = 'none';
-        this.mainScreen.style.display = 'flex';
-        cancelAnimationFrame(raf);
-      }
-    }
+
+
+//--------------------------------------------------------------------------------------------//
+/*function validationFrom() {
+  let nameValue = document.getElementById('name').value;
+  if (!nameValue) {
+    let inf = document.createElement('p');
+    inf.innerHTML = 'The field can\'t be empty';
+    inf.className = 'inform';
+    document.getElementById('start-form').insertBefore(inf,document.getElementById('btn-start'));
+  } else {
+    setLocation('new_game');
   }
-  setLocation(curLoc) {
-      try {
-        history.pushState({page: curLoc}, '', curLoc);
-        return;
-      } catch(e) {}
-      location.hash = '#' + curLoc;
-  }
-}
-
-const SG = new StartGame(canvas);
-
-
-
-
-
-
-
-
+  event.preventDefault();
+}*/
