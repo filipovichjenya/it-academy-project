@@ -25,6 +25,7 @@ let spacePressed = false;
 let score = 0;
 let currentFrame = 1;
 let gameSpeed = 0;
+let lives = 3;
 let argsImg = {
             args1:[1113,485,16,118,-32.5,0,14,118],
             args2:[1113,485,16,118,-52.5,0,14,118]
@@ -328,7 +329,6 @@ function checkBulletsCollisions() {
 
         if (boxCollides(pos, size, pos2, size2)) {
           clearRequestInterval(enem[i].int);
-
           // Remove the enemy
           enem.splice(i, 1);
           i--;
@@ -424,13 +424,18 @@ function startAnim(){
 
   ctx.font = 'bold 30px Arial';
   ctx.fillText(score, 100, 25);
+  ctx.fillText(lives, 100, 70);
 
   checkBulletsCollisions();
   raf = requestAnimationFrame(startAnim);
 
-  if (gameOver()) {
+  if (gameOver() && !lives) {
     cancelAnimationFrame(raf);
     new RestartGame();
+  } else if (gameOver()) {
+    lives--;
+    const restartClass = new RestartGame();
+    restartClass.restart();
   }
 }
 
