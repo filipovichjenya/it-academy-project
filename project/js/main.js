@@ -1,6 +1,30 @@
 'use strict';
 
+let requestAnimFrame = (function(){
+	return  window.requestAnimationFrame       || 
+		window.webkitRequestAnimationFrame || 
+		window.mozRequestAnimationFrame    || 
+		window.oRequestAnimationFrame      || 
+		window.msRequestAnimationFrame     ||  
+		function( callback ){
+			return window.setTimeout(callback, 1000 / 60);
+		};
+})();
+
+
+let cancelRequestAnimFrame = ( function() {
+	return window.cancelAnimationFrame          ||
+		window.webkitCancelRequestAnimationFrame    ||
+		window.mozCancelRequestAnimationFrame       ||
+		window.oCancelRequestAnimationFrame     ||
+		window.msCancelRequestAnimationFrame        ||
+		clearTimeout
+} )();
+
+
 //главные переменные
+var start;
+var res;
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext("2d"); //область canvas
 const W =  document.documentElement.clientWidth; // длина окна
@@ -26,13 +50,18 @@ let score = 0;
 let currentFrame = 1;
 let gameSpeed = 0;
 let lives = 3;
+let crt;
+let cr = [];
 let argsImg = {
             args1:[1113,485,16,118,-32.5,0,14,118],
             args2:[1113,485,16,118,-52.5,0,14,118]
 };
 location.hash = '';
+let over = 0;
+var r;
 //-----------------------------------------------------------------------------------//
 
+//-----------------------//
 const throttle = (func, limit) => {
   let lastFunc;
   let lastRan;
@@ -143,6 +172,7 @@ class Enemies {
       function(){
           let i = new Shot(_this.x + _this.w/2-4,_this.y+_this.h/1.5);
           shots.push(i);
+          console.log(_this)
       },getRandom(2000,4000)
     )
   }
@@ -292,6 +322,7 @@ function drawArray(array) {
     array[i].draw();
     array[i].update();
     if ((array[i].y > H) || (array[i].x > W) || (array[i].x < -100)) {
+      if(array[i].int)  clearRequestInterval(array[i].int);
       array.splice(i, 1);
       i--;
     }
@@ -342,34 +373,10 @@ function checkBulletsCollisions() {
         }
       }
     }
-
   }
 }
-//создание элементов игры
-function create(){
-  createElementsGame(getRandom(1,1+Math.floor(gameSpeed)),Enemies,enem);
-  createElementsGame(getRandom(0,3),Asteroids,asteroidsArray);
-}
-requestInterval(create,3000);
-createElementsGame(canvas.width/3,Stars,stars);
 
-const hero = new MainHero();
-
-//инициализация картинок и запуск
-function init(){
-  //back.src = 'img/a.jpg';
-  imgEnem.src = 'img/Sprites/Ships/spaceShips_001.png';
-  imgMainHero.src = 'img/Sprites/Ships/spaceShips_009.png';
-  imgShots.src = 'img/Sprites/Missiles/spaceMissiles_015.png';
-  sprites.src = 'img/sprites.png';
-  imgAsteroids.src = 'img/Sprites/Meteors/spaceMeteors_001.png';
-  smog.src = 'img/a.png';
-  requestAnimationFrame(startAnim);
-}
-
-let raf;
-
-function gameOver() {
+function checkHeroColision(){
   if (shots.length !== 0) {
     for (let i = 0; i < shots.length; i++) {
       let pos = [];
@@ -386,27 +393,67 @@ function gameOver() {
       size2.push(hero.w);
       size2.push(hero.h);
 
-      if (boxCollides(pos, size, pos2, size2)) {
-        return true;
+      if ( boxCollides(pos, size, pos2, size2) && !lives) {
+        cancelRequestAnimFrame(start);
+          over = 1;
+          break;
       }
-      if (shots.length !== 0) {
-        for (let j = 0; j < asteroidsArray.length; j++) {
-          let pos1 = [];
-          pos1.push(asteroidsArray[j].x);
-          pos1.push(asteroidsArray[j].y);
-          let size1 = [];
-          size1.push(asteroidsArray[j].w);
-          size1.push(asteroidsArray[j].h);
-          if (boxCollides(pos1, size1, pos2, size2)) {
-            //return true;
-          }
-        }
+      else if(boxCollides(pos, size, pos2, size2)){
+        shots.splice(i, 1);
+        lives--;
       }
+      }      
     }
   }
+
+
+//создание элементов игры
+function create(){
+  createElementsGame(getRandom(1,1+Math.floor(gameSpeed)),Enemies,enem);
+  createElementsGame(getRandom(0,3),Asteroids,asteroidsArray);
 }
+createElementsGame(canvas.width/3,Stars,stars);
+
+const hero = new MainHero();
+
+//инициализация картинок и запуск
+function init(){
+  imgEnem.src = 'img/Sprites/Ships/spaceShips_001.png';
+  imgMainHero.src = 'img/Sprites/Ships/spaceShips_009.png';
+  imgShots.src = 'img/Sprites/Missiles/spaceMissiles_015.png';
+  sprites.src = 'img/sprites.png';
+  imgAsteroids.src = 'img/Sprites/Meteors/spaceMeteors_001.png';
+  smog.src = 'img/a.png';  
+
+  startAnim();
+}
+
+
+
+function gameOver() {  
+  clearRequestInterval(crt);
+    for(let i = 0; i < enem.length; i++){      
+      clearRequestInterval(enem[i].int);
+      enem.splice(i, 1);      
+      i--;
+    }
+     
+    enem = []; 
+    shots = [];     
+    bullets = [];
+    asteroidsArray = [];    
+    
+    gameSpeed = 0;
+    over = 0;
+    lives = 3;
+    res = new RestartGame;
+    score = 0; 
+  }
+
+  
 //функция запуска анимации
 function startAnim(){
+
   ctx.clearRect(0,0,W,H);
   ctx.fillStyle = 'black';
   ctx.fillRect(0,0,W,H);
@@ -425,26 +472,17 @@ function startAnim(){
   ctx.font = 'bold 30px Arial';
   ctx.fillText(score, 100, 25);
   ctx.fillText(lives, 100, 70);
-
+  start = requestAnimFrame(startAnim);
   checkBulletsCollisions();
-  raf = requestAnimationFrame(startAnim);
-
-  if (gameOver() && !lives) {
-    cancelAnimationFrame(raf);
-    new RestartGame();
-  } else if (gameOver()) {
-    lives--;
-    const restartClass = new RestartGame();
-    restartClass.restart();
-  }
+  checkHeroColision()
+  if(over===1) gameOver(); 
+  
+   
 }
-
-cancelAnimationFrame(raf);
 
 class RestartGame {
   constructor() {
     this.mainHero = new MainHero;
-    this.enemies = new Enemies;
     this.restartScreen = document.querySelector('.restart');
     this.restartButton = document.querySelector('#restart-btn');
     this.quitButton = document.querySelector('#quit-btn');
@@ -456,21 +494,18 @@ class RestartGame {
     this.restartButton.addEventListener('click', this.restart.bind(this));
   }
   quit() {
-    cancelAnimationFrame(raf);
     this.restartScreen.style.display = 'none';
     window.history.back();
     window.location.reload();
   }
   restart() {
+    cancelRequestAnimFrame(start);
+    clearRequestInterval(crt);
+    this.youScore.remove();
+    res = {};
     this.restartScreen.style.display = 'none';
-    score = 0;
-    clearRequestInterval(this.enemies.int);
-    enem = [];
-    bullets = [];
-    shots = [];
-    this.mainHero.x = W/2;
-    this.mainHero.y = (H - this.mainHero.h);
-    init();
+    crt = requestInterval(create,3000);
+    start = requestAnimFrame(startAnim);
   }
 }
 
@@ -504,12 +539,13 @@ class StartGame {
     if (!this.myHash || this.myHash === '#' ) {
       this.cvs.style.display = 'none';
       this.mainScreen.style.display = 'flex';
-      cancelAnimationFrame(raf);
+      cancelRequestAnimFrame(start);
     }
     if (this.myHash === ('#' + this.pageHash)) {
       this.cvs.style.display = 'block';
       this.mainScreen.style.display = 'none';
-      init();
+      crt = requestInterval(create,3000);
+     init();
     }
   }
   madeRoutingLocation(event) {
@@ -518,11 +554,11 @@ class StartGame {
       if (e.state.page === this.pageHash) {
         this.cvs.style.display = 'block';
         this.mainScreen.style.display = 'none';
-        init();
+        crt = requestInterval(create,3000);
       } else if (!e.state) {
         this.cvs.style.display = 'none';
         this.mainScreen.style.display = 'flex';
-        cancelAnimationFrame(raf);
+        cancelRequestAnimFrame(start);
       }
     }
   }
@@ -536,11 +572,3 @@ class StartGame {
 }
 
 const SG = new StartGame(canvas);
-
-
-
-
-
-
-
-
