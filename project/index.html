@@ -19,20 +19,46 @@
 </head>
 
 <body>
-<canvas id="canvas"></canvas>
-<div class="main-screen">
-    <div class="start">
-        <form id="start-form" class="game-form">
-            <input id="name" class="name" type="text" placeholder="Enter your name: ">
-            <input id="btn-start" class="btn" type="submit" value="Start game">
-        </form>
+    <canvas id="canvas"></canvas>
+    <div class="main-screen">
+        <h1>Похитители космоса</h1>
+        <div class="start">
+            <form id="start-form" class="game-form">
+                <input id="name" class="name" type="text" placeholder="Enter your name: ">
+                <input id="btn-start" class="btn" type="submit" value="Start game">
+            </form>
+        </div>
+        <button id="btn-rules" class="btn">Rules</button>
     </div>
-</div>
 
-<div class="restart">
-    <button id="restart-btn" class="btn">Restart</button>
-    <button id="quit-btn" class="btn">Quit the game</button>
-</div>
+    <div class="restart">
+        <button id="restart-btn" class="btn">Restart</button>
+        <button id="quit-btn" class="btn">Quit the game</button>
+    </div>
+
+    <div id="rules">
+        <div class="rules-wrapper">
+            <h1>
+                Правила игры:
+            </h1>
+            <ul>
+                <li>
+                    Главная цель игры набрать как можно больше очков, очки начисляются за уничтожение
+                    врага. За каждого врага начисляются 100 очков.
+                </li>
+                <li>
+                    На момент старта у игрока есть 3 жизни, жизнь расходуется при попадании врага в
+                    главного героя либо при попадании игрока в астеройд.
+                </li>
+                <li>
+                    Управление игроком осуществляется нажатием стрелок на клавиатуре "влево" (<-) / "вправо" (->).
+                </li>
+                <li>
+                    Стрелять во врагов нужно клавишей "пробел".
+                </li>
+            </ul>
+        </div>
+    </div>
 </body>
 
 </html>

@@ -35,7 +35,7 @@ window.requestInterval = function(fn, delay) {
     }
 
     handle.value = requestAnimFrame(loop);
-  };
+  }
 
   handle.value = requestAnimFrame(loop);
   return handle;
