@@ -47,21 +47,19 @@
   let leftPressed = false;
   let spacePressed = false;
   let score = 0;
-  let currentFrame = 1;
+  let currentFrame = 0;
   let gameSpeed = 0;
   let lives = 3;
   let crt;
-  let cr = [];
   let argsImg = {
-    args1:[1113,485,16,118,-32.5,0,14,118],
-    args2:[1113,485,16,118,-52.5,0,14,118]
+    args1: [1113, 485, 16, 118, -32.5, 0, 14, 70],
+    args2: [1113, 485, 16, 118, -52.5, 0, 14, 70],
+    args3: [378, 374, 14, 23, 71, 81, 14, 23],
+    args4: [378, 374, 14, 23, 31, 81, 14, 23]
   };
   location.hash = '';
   let over = 0;
-  let r;
-//-----------------------------------------------------------------------------------//
 
-//-----------------------//
   const throttle = (func, limit) => {
     let lastFunc;
     let lastRan;
@@ -184,19 +182,16 @@
       ctx.drawImage(sprites,...argsImg.args2);
       switch(currentFrame) {
         case 0:
-          argsImg.args1 = [540,645,16,118,-32.5,0,14,118];
-          argsImg.args2 = [540,645,16,118,-52.5,0,14,118];
-          currentFrame++;
+          argsImg.args1 = [540,645,16,118,-32.5,0,14,70];
+          argsImg.args2 = [540,645,16,118,-52.5,0,14,70];
           break;
-        case 1:
-          argsImg.args1 = [1113,927,11,118,-32.5,0,13,118];
-          argsImg.args2 = [1113,927,11,118,-52.5,0,13,118];
-          currentFrame++;
+        case 3:
+          argsImg.args1 = [1113,927,11,118,-32.5,0,13,70];
+          argsImg.args2 = [1113,927,11,118,-52.5,0,13,70];
           break;
-        case 2:
-          argsImg.args1 = [1125,927,6,118,-28.5,0,6,118];
-          argsImg.args2 = [1125,927,6,118,-48.5,0,6,118];
-          currentFrame = 0;
+        case 6:
+          argsImg.args1 = [1125,927,6,118,-28.5,0,6,70];
+          argsImg.args2 = [1125,927,6,118,-48.5,0,6,70];
           break;
       }
       ctx.restore();
@@ -226,7 +221,7 @@
     }
     update(){
       this.y += this.speed;
-    };
+    }
   }
 
 //класс главного героя
@@ -235,12 +230,29 @@
       this.w = 114;
       this.h = 82;
       this.x = W/2;
-      this.y = (H - this.h);
+      this.y = (H - this.h - 35);
       this.speed = 7;
     }
     draw() {
       ctx.save();
-      ctx.drawImage(imgMainHero,this.x,this.y);
+      ctx.drawImage(imgMainHero, this.x, this.y);
+      ctx.translate(this.x, this.y);
+      ctx.drawImage(sprites, ...argsImg.args3);
+      ctx.drawImage(sprites, ...argsImg.args4);
+      switch (currentFrame) {
+        case 0:
+          argsImg.args3 = [378, 374, 14, 23, 71, 81, 14, 23];
+          argsImg.args4 = [378, 374, 14, 23, 31, 81, 14, 23];
+          break;
+        case 3:
+          argsImg.args3 = [378, 323, 14, 23, 71, 81, 14, 23];
+          argsImg.args4 = [378, 323, 14, 23, 31, 81, 14, 23];
+          break;
+        case 6:
+          argsImg.args3 = [378, 374, 14, 23, 71, 81, 14, 23];
+          argsImg.args4 = [378, 374, 14, 23, 31, 81, 14, 23];
+          break;
+      }
       ctx.restore();
     }
     update(){
@@ -484,6 +496,7 @@
     ctx.font = 'bold 30px Arial';
     ctx.fillText(score, 100, 25);
     ctx.fillText(lives, 100, 70);
+    currentFrame > 6 ? currentFrame = 0 : currentFrame++;
     start = requestAnimFrame(startAnim);
     checkBulletsCollisions();
     checkHeroColision();
