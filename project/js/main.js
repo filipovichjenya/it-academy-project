@@ -1,5 +1,4 @@
 
-{
   'use strict';
   let requestAnimFrame = (function(){
     return  window.requestAnimationFrame       ||
@@ -37,7 +36,6 @@
   const imgAsteroids = new Image();
   const imgMainHero = new Image();
   const smog = new Image();
-  const imgAsteroidsSrc = [];
   let enem = [];  // массив врагов
   let bullets = [];
   let asteroidsArray = []; // массив астеройдов
@@ -117,7 +115,7 @@
     return Math.floor(Math.random() * (max - min + 1)) + min;
   }
 
-//класс звезд в фоне
+// класс звезд в фоне
   class Stars {
     constructor(){
       this.x = Math.random()*canvas.width;
@@ -332,11 +330,6 @@
     for(let i = 0; i < array.length; i++){
       array[i].draw();
       array[i].update();
-    }
-  }
-
-  function deleteArray(array) {
-    for(let i = 0; i < array.length; i++){
       if ((array[i].y > H) || (array[i].x > W) || (array[i].x < -100)) {
         if(array[i].int)  clearRequestInterval(array[i].int);
         array.splice(i, 1);
@@ -344,6 +337,7 @@
       }
     }
   }
+
 
   function deleteBulletsArray(array) {
     for(let i = 0; i < array.length; i++){
@@ -474,7 +468,6 @@
 
 //функция запуска анимации
   function startAnim(){
-
     ctx.clearRect(0,0,W,H);
     ctx.fillStyle = 'black';
     ctx.fillRect(0,0,W,H);
@@ -483,11 +476,8 @@
     ctx.fillStyle='white';
 
     drawArray(asteroidsArray);
-    deleteArray(asteroidsArray);
     drawArray(enem);
-    deleteArray(enem);
     drawArray(shots);
-    deleteArray(shots);
     drawArray(bullets);
     deleteBulletsArray(bullets);
     hero.draw();
@@ -616,4 +606,4 @@
   }
 
   const SG = new StartGame(canvas);
-}
+
