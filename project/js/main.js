@@ -31,7 +31,7 @@
   canvas.width = W; // canvas ширина
   canvas.height = H - 4; // canvas высота
   const sprites = new Image();
-  const imgEnem = new Image(71,53);
+  const imgEnem = new Image();
   const imgShots = new Image();
   const imgAsteroids = new Image();
   const imgMainHero = new Image();
@@ -57,7 +57,57 @@
   };
   location.hash = '';
   let over = 0;
+///--
+var booms = [];
+class Boom {
+  constructor(x,y,vx,vy){
+    this.x = x;
+    this.y = y;
+    this.vx = vx;
+    this.vy = vy;
+    this.color = 'white';
+    this.scale = 5; 
+    this.scaleCircle = 8;
 
+  }
+  draw(){    
+
+    ctx.save();
+		ctx.translate(this.x+5, this.y+5);				
+    ctx.beginPath();
+    ctx.scale(this.scale, this.scale);
+    ctx.drawImage(imgEnem,0,0,imgEnem.width/8,imgEnem.height/8);
+		ctx.closePath();		
+    ctx.restore();
+    ctx.save();
+
+    ctx.translate(this.x+imgEnem.width/3, this.y+imgEnem.height/3);
+    ctx.beginPath();
+    ctx.scale(this.scaleCircle, this.scaleCircle-4);
+    ctx.arc(0, 0, 10, 0, Math.PI*2, true);
+    ctx.fillStyle = this.color;
+    ctx.fill();
+    ctx.closePath();
+    ctx.restore();
+  }
+  update(){
+    this.scale -=0.05; 
+    this.scaleCircle -= 0.8;
+      
+    this.x += this.vx;
+    this.x == -1 ? this.vx-2 : this.vx+2;
+    this.y += this.vy+2;
+    if(this.scale <= 0) this.scale = 0;
+    if(this.scaleCircle <= 0) this.scaleCircle = 0;
+  }
+}
+
+
+function createBooms(x,y,vx,vy){
+  var boom = new Boom(x,y,vx,vy);
+  booms.push(boom);
+}
+//--
   const throttle = (func, limit) => {
     let lastFunc;
     let lastRan;
@@ -122,7 +172,7 @@
       this.y = Math.random()*canvas.height;
       this.color = 'white';
       this.size = getRandom(0.2,0.4);
-      this.sizeRatio = getRandom(1,3);
+      this.sizeRatio = getRandom(0.5,3);
     }
     draw(){
       ctx.save();
@@ -142,7 +192,7 @@
       this.y = y;
       this.w = imgShots.width*0.7;
       this.h = imgShots.height*0.7;
-      this.speed = getRandom(2,4)+gameSpeed;
+      this.speed = getRandom(2,4)+gameSpeed/3;      
     }
     draw(){
       ctx.save();
@@ -163,10 +213,10 @@
       this.w = imgEnem.width;
       this.h = imgEnem.height;
       this.vx = getRandom(-1,1);
-      this.vy = getRandom(.3,.5);
+      this.vy = getRandom(.7,1.1);
       this.int = requestInterval(
         function(){
-          let i = new Shot(_this.x + _this.w/2-4,_this.y+_this.h/1.5);
+          let i = new Shot(_this.x + _this.w/2-21.5,_this.y+_this.h/1.8);
           shots.push(i);
         },getRandom(2000,4000)
       )
@@ -229,7 +279,7 @@
       this.h = 82;
       this.x = W/2;
       this.y = (H - this.h - 35);
-      this.speed = 7;
+      this.speed = 7+gameSpeed/2;
     }
     draw() {
       ctx.save();
@@ -278,9 +328,11 @@
     }
     draw() {
       ctx.save();
+      ctx.beginPath();
       ctx.fillStyle = 'pink';
       ctx.fillRect(this.x, this.y, this.w, this.h);
       ctx.fill();
+      ctx.closePath();
       ctx.restore();
     }
     update(){
@@ -380,12 +432,14 @@
           if (boxCollides(pos, size, pos2, size2)) {
             clearRequestInterval(enem[i].int);
             // Remove the enemy
+            createBooms(enem[i].x,enem[i].y,enem[i].vx,enem[i].vy);
             enem.splice(i, 1);
             i--;
+            
             // Add score
             score += 100;
             //Скорость игры ++
-            gameSpeed += 0.05;
+            gameSpeed += 0.1;
             // Remove the bullet and stop this iteration
             bullets.splice(j, 1);
             break;
@@ -430,7 +484,7 @@
     createElementsGame(getRandom(1,1+Math.floor(gameSpeed)),Enemies,enem);
     createElementsGame(getRandom(0,3),Asteroids,asteroidsArray);
   }
-  createElementsGame(canvas.width/3,Stars,stars);
+  createElementsGame(canvas.width,Stars,stars);
 
   const hero = new MainHero();
 
@@ -438,7 +492,7 @@
   function init(){
     imgEnem.src = 'img/Sprites/Ships/spaceShips_001.png';
     imgMainHero.src = 'img/Sprites/Ships/spaceShips_009.png';
-    imgShots.src = 'img/Sprites/Missiles/spaceMissiles_015.png';
+    imgShots.src = 'img/Sprites/Missiles/spaceMissiles_037.png';
     sprites.src = 'img/sprites.png';
     imgAsteroids.src = 'img/Sprites/Meteors/spaceMeteors_001.png';
     smog.src = 'img/a.png';
@@ -475,6 +529,8 @@
     ctx.drawImage(smog,-1150,-400,smog.width*2.5,smog.height*2.5); // фон (косяк, обновляется каждый фрэйм)
     ctx.fillStyle='white';
 
+    
+    drawArray(booms)
     drawArray(asteroidsArray);
     drawArray(enem);
     drawArray(shots);
