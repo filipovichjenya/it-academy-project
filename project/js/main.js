@@ -58,8 +58,9 @@
   location.hash = '';
   let over = 0;
   let booms = [];
-  const backMusic = document.querySelector('#mus-back');
+  let backMusic = null;
   let exploreSound = null;
+  let gameOverMusic = null;
 ///--
 
 class Boom {
@@ -69,18 +70,18 @@ class Boom {
     this.vx = vx;
     this.vy = vy;
     this.color = 'white';
-    this.scale = 5; 
+    this.scale = 5;
     this.scaleCircle = 8;
 
   }
-  draw(){    
+  draw(){
 
     ctx.save();
-		ctx.translate(this.x+5, this.y+5);				
+		ctx.translate(this.x+5, this.y+5);
     ctx.beginPath();
     ctx.scale(this.scale, this.scale);
     ctx.drawImage(imgEnem,0,0,imgEnem.width/8,imgEnem.height/8);
-		ctx.closePath();		
+		ctx.closePath();
     ctx.restore();
     ctx.save();
 
@@ -94,9 +95,9 @@ class Boom {
     ctx.restore();
   }
   update(){
-    this.scale -=0.05; 
+    this.scale -=0.05;
     this.scaleCircle -= 0.8;
-      
+
     this.x += this.vx;
     this.x == -1 ? this.vx-2 : this.vx+2;
     this.y += this.vy+2;
@@ -195,7 +196,7 @@ function createBooms(x,y,vx,vy){
       this.y = y;
       this.w = imgShots.width*0.7;
       this.h = imgShots.height*0.7;
-      this.speed = getRandom(2,4)+gameSpeed/3;      
+      this.speed = getRandom(2,4)+gameSpeed/3;
     }
     draw(){
       ctx.save();
@@ -254,7 +255,7 @@ function createBooms(x,y,vx,vy){
     }
   }
 
-  class Sound {
+  class MySound {
     constructor(src) {
       this.sound = document.createElement("audio");
       this.sound.src = src;
@@ -269,7 +270,12 @@ function createBooms(x,y,vx,vy){
     stop(){
       this.sound.pause();
     }
+    enableLoop() {
+      this.sound.loop = true;
+    }
   }
+
+
 
 //класс астеройдов
   class Asteroids {
@@ -453,12 +459,12 @@ function createBooms(x,y,vx,vy){
           if (boxCollides(pos, size, pos2, size2)) {
             clearRequestInterval(enem[i].int);
             // Remove the enemy
-            exploreSound = new Sound('./music/explore.mp3');
+            exploreSound = new MySound('./music/explore.mp3');
             exploreSound.play();
             createBooms(enem[i].x,enem[i].y,enem[i].vx,enem[i].vy);
             enem.splice(i, 1);
             i--;
-            
+
             // Add score
             score += 100;
             //Скорость игры ++
@@ -516,6 +522,7 @@ function createBooms(x,y,vx,vy){
     music.play();
   }
   //инициализация картинок и запуск
+  backMusic = new MySound('./music/Sound_19245.mp3');
   function init(){
     imgEnem.src = 'img/Sprites/Ships/spaceShips_001.png';
     imgMainHero.src = 'img/Sprites/Ships/spaceShips_009.png';
@@ -524,9 +531,12 @@ function createBooms(x,y,vx,vy){
     imgAsteroids.src = 'img/Sprites/Meteors/spaceMeteors_001.png';
     smog.src = 'img/a.png';
 
-    playSound(backMusic);
+    backMusic.enableLoop();
+    backMusic.play();
     startAnim();
   }
+
+
 
   function gameOver() {
     clearRequestInterval(crt);
@@ -535,6 +545,11 @@ function createBooms(x,y,vx,vy){
       enem.splice(i, 1);
       i--;
     }
+
+    console.log(backMusic);
+    backMusic.stop();
+    gameOverMusic = new MySound('./music/gameover.mp3');
+    gameOverMusic.play();
 
     enem = [];
     shots = [];
@@ -557,7 +572,7 @@ function createBooms(x,y,vx,vy){
     ctx.drawImage(smog,-1150,-400,smog.width*2.5,smog.height*2.5); // фон (косяк, обновляется каждый фрэйм)
     ctx.fillStyle='white';
 
-    
+
     drawArray(booms);
     drawArray(asteroidsArray);
     drawArray(enem);
@@ -566,6 +581,7 @@ function createBooms(x,y,vx,vy){
     deleteBulletsArray(bullets);
     hero.draw();
     hero.update();
+
 
     ctx.font = 'bold 30px Arial';
     ctx.fillText(score, 100, 25);
@@ -598,6 +614,8 @@ function createBooms(x,y,vx,vy){
     restart() {
       cancelRequestAnimFrame(myStart);
       clearRequestInterval(crt);
+      gameOverMusic.stop();
+      backMusic.play();
       this.youScore.remove();
       res = {};
       this.restartScreen.style.display = 'none';
