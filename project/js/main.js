@@ -61,6 +61,7 @@
   let backMusic = null;
   let exploreSound = null;
   let gameOverMusic = null;
+  let lostLiveSound = null;
 ///--
 
 class Boom {
@@ -502,6 +503,8 @@ function createBooms(x,y,vx,vy){
         }
         else if(boxCollides(pos, size, pos2, size2)){
           shots.splice(i, 1);
+          lostLiveSound = new MySound('./music/crash.mp3');
+          lostLiveSound.play();
           lives--;
         }
       }
@@ -690,13 +693,14 @@ function createBooms(x,y,vx,vy){
       }
     }
     madeRoutingLocation(event) {
-      if (window.protocol !== 'file:') {
+      console.log(window.window.location.protocol);
+      if (window.location.protocol !== 'file:') {
         this.pageStartHash = 'new-game.html';
         this.pageRulesHash = 'rules';
         this.eventStatePage = event.state ? event.state.page : null;
 
         if (!!this.eventStatePage) {
-            if (this.evntStatePage === this.pageStartHash) {
+            if (this.eventStatePage === this.pageStartHash) {
             this.showGame();
           } else if (this.eventStatePage === this.pageRulesHash) {
             this.showRules();
