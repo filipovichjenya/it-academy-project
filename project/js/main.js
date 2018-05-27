@@ -22,7 +22,7 @@
 
 
 //главные переменные
-  let start;
+  let myStart;
   let res;
   const canvas = document.getElementById('canvas');
   const ctx = canvas.getContext("2d"); //область canvas
@@ -57,8 +57,10 @@
   };
   location.hash = '';
   let over = 0;
+  let booms = [];
+  const backMusic = document.querySelector('#mus-back');
 ///--
-var booms = [];
+
 class Boom {
   constructor(x,y,vx,vy){
     this.x = x;
@@ -467,7 +469,7 @@ function createBooms(x,y,vx,vy){
         size2.push(hero.h);
 
         if ( boxCollides(pos, size, pos2, size2) && !lives) {
-          cancelRequestAnimFrame(start);
+          cancelRequestAnimFrame(myStart);
           over = 1;
           break;
         }
@@ -488,7 +490,11 @@ function createBooms(x,y,vx,vy){
 
   const hero = new MainHero();
 
-//инициализация картинок и запуск
+  function playSound(music) {
+    music.loop = true;
+    music.play();
+  }
+  //инициализация картинок и запуск
   function init(){
     imgEnem.src = 'img/Sprites/Ships/spaceShips_001.png';
     imgMainHero.src = 'img/Sprites/Ships/spaceShips_009.png';
@@ -497,6 +503,7 @@ function createBooms(x,y,vx,vy){
     imgAsteroids.src = 'img/Sprites/Meteors/spaceMeteors_001.png';
     smog.src = 'img/a.png';
 
+    playSound(backMusic);
     startAnim();
   }
 
@@ -543,7 +550,7 @@ function createBooms(x,y,vx,vy){
     ctx.fillText(score, 100, 25);
     ctx.fillText(lives, 100, 70);
     currentFrame > 6 ? currentFrame = 0 : currentFrame++;
-    start = requestAnimFrame(startAnim);
+    myStart = requestAnimFrame(startAnim);
     checkBulletsCollisions();
     checkHeroColision();
     if(over===1) gameOver();
@@ -569,13 +576,13 @@ function createBooms(x,y,vx,vy){
       window.location.reload();
     }
     restart() {
-      cancelRequestAnimFrame(start);
+      cancelRequestAnimFrame(myStart);
       clearRequestInterval(crt);
       this.youScore.remove();
       res = {};
       this.restartScreen.style.display = 'none';
       crt = requestInterval(create,3000);
-      start = requestAnimFrame(startAnim);
+      myStart = requestAnimFrame(startAnim);
     }
   }
 
@@ -593,12 +600,12 @@ function createBooms(x,y,vx,vy){
       this.rulesButton.addEventListener('click', this.changeLocationRules.bind(this));
       this.inform.innerHTML = '';
       this.inform.className = 'inform';
-      this.pageStartHash = 'new-game';
+      this.pageStartHash = 'new-game.html';
       this.pageRulesHash = 'rules';
       window.onhashchange = this.madeRoutingStart.bind(this);
       window.onpopstate = this.madeRoutingLocation.bind(this);
     }
-    validationFrom() {
+    validationFrom(event) {
       this.nameValue = this.name.value;
       if (!this.nameValue) {
         this.inform.innerHTML = 'The field can\'t be empty';
@@ -614,6 +621,7 @@ function createBooms(x,y,vx,vy){
       this.showRules();
     }
     showGame() {
+      cancelRequestAnimFrame(myStart);
       this.cvs.style.display = 'block';
       this.mainScreen.style.display = 'none';
       crt = requestInterval(create,3000);
@@ -623,12 +631,12 @@ function createBooms(x,y,vx,vy){
       this.cvs.style.display = 'none';
       this.pageRules.style.display = 'none';
       this.mainScreen.style.display = 'flex';
-      cancelRequestAnimFrame(start);
+      cancelRequestAnimFrame(myStart);
     }
     showRules() {
       this.mainScreen.style.display = 'none';
       this.pageRules.style.display = 'flex';
-      cancelRequestAnimFrame(start);
+      cancelRequestAnimFrame(myStart);
     }
     madeRoutingStart() {
       this.myHash = window.location.hash;
@@ -637,18 +645,16 @@ function createBooms(x,y,vx,vy){
       }
       if (this.myHash === ('#' + this.pageStartHash)) {
         this.showGame();
-
       }
       if (this.myHash === ('#' + this.pageRulesHash)) {
         this.showRules();
       }
     }
     madeRoutingLocation(event) {
-      this.pageStartHash = 'new-game';
+      this.pageStartHash = 'new-game.html';
       this.pageRulesHash = 'rules';
-      this.eventStatePage = event.state ? JSON.stringify(event.state.page) : null;
-      console.log(this.eventStatePage);
-      console.log(!!this.eventStatePage);
+      this.eventStatePage = event.state ? event.state.page : null;
+
       if (!!this.eventStatePage) {
         if (this.eventStatePage === this.pageStartHash) {
           this.showGame();
@@ -656,6 +662,7 @@ function createBooms(x,y,vx,vy){
           this.showRules();
         }
       } else {
+        window.location.reload();
         this.showMainPage();
       }
     }
