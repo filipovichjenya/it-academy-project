@@ -696,15 +696,14 @@ function createBooms(x,y,vx,vy){
         this.eventStatePage = event.state ? event.state.page : null;
 
         if (!!this.eventStatePage) {
-          if (this.eventStatePage === this.pageStartHash) {
+            if (this.evntStatePage === this.pageStartHash) {
             this.showGame();
           } else if (this.eventStatePage === this.pageRulesHash) {
             this.showRules();
           }
-          else {
-            window.location.reload();
-            this.showMainPage();
-          }
+        } else {
+          window.location.reload();
+          this.showMainPage();
         }
       }
     }
