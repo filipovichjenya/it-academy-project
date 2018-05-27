@@ -530,7 +530,7 @@ function createBooms(x,y,vx,vy){
     ctx.fillStyle='white';
 
     
-    drawArray(booms)
+    drawArray(booms);
     drawArray(asteroidsArray);
     drawArray(enem);
     drawArray(shots);
@@ -547,8 +547,6 @@ function createBooms(x,y,vx,vy){
     checkBulletsCollisions();
     checkHeroColision();
     if(over===1) gameOver();
-
-
   }
 
   class RestartGame {
@@ -592,13 +590,13 @@ function createBooms(x,y,vx,vy){
       this.name = document.getElementById('name');
       this.inform = document.createElement('p');
       this.form.addEventListener('submit', this.validationFrom.bind(this));
-      this.rulesButton.addEventListener('click', this.showRules.bind(this));
+      this.rulesButton.addEventListener('click', this.changeLocationRules.bind(this));
       this.inform.innerHTML = '';
       this.inform.className = 'inform';
       this.pageStartHash = 'new-game';
       this.pageRulesHash = 'rules';
       window.onhashchange = this.madeRoutingStart.bind(this);
-      window.onpopstate = this.madeRoutingLocation(event);
+      window.onpopstate = this.madeRoutingLocation.bind(this);
     }
     validationFrom() {
       this.nameValue = this.name.value;
@@ -607,49 +605,58 @@ function createBooms(x,y,vx,vy){
         this.form.insertBefore(this.inform, this.startButton);
       } else if (this.nameValue) {
         this.setLocation(this.pageStartHash);
+        this.showGame();
       }
       event.preventDefault();
     }
-    showRules() {
+    changeLocationRules() {
       this.setLocation(this.pageRulesHash);
+      this.showRules();
+    }
+    showGame() {
+      this.cvs.style.display = 'block';
+      this.mainScreen.style.display = 'none';
+      crt = requestInterval(create,3000);
+      init();
+    }
+    showMainPage() {
+      this.cvs.style.display = 'none';
+      this.pageRules.style.display = 'none';
+      this.mainScreen.style.display = 'flex';
+      cancelRequestAnimFrame(start);
+    }
+    showRules() {
+      this.mainScreen.style.display = 'none';
+      this.pageRules.style.display = 'flex';
+      cancelRequestAnimFrame(start);
     }
     madeRoutingStart() {
       this.myHash = window.location.hash;
       if (!this.myHash || this.myHash === '#' ) {
-        this.cvs.style.display = 'none';
-        this.pageRules.style.display = 'none';
-        this.mainScreen.style.display = 'flex';
-        cancelRequestAnimFrame(start);
+        this.showMainPage();
       }
       if (this.myHash === ('#' + this.pageStartHash)) {
-        this.cvs.style.display = 'block';
-        this.mainScreen.style.display = 'none';
-        crt = requestInterval(create,3000);
-        init();
+        this.showGame();
+
       }
       if (this.myHash === ('#' + this.pageRulesHash)) {
-        this.mainScreen.style.display = 'none';
-        this.pageRules.style.display = 'flex';
-        cancelRequestAnimFrame(start);
+        this.showRules();
       }
     }
     madeRoutingLocation(event) {
-      if (event) {
-        this.pageStartHash = 'new-game';
-        this.pageRulesHash = 'rules';
-        if (event.state.page === this.pageStartHash) {
-          this.cvs.style.display = 'block';
-          this.mainScreen.style.display = 'none';
-          crt = requestInterval(create,3000);
-        } else if (event.state.page === this.pageRulesHash) {
-          this.mainScreen.style.display = 'none';
-          this.pageRules.style.display = 'flex';
-          cancelRequestAnimFrame(start);
-        } else if (!event.state) {
-          this.cvs.style.display = 'none';
-          this.mainScreen.style.display = 'flex';
-          cancelRequestAnimFrame(start);
+      this.pageStartHash = 'new-game';
+      this.pageRulesHash = 'rules';
+      this.eventStatePage = event.state ? JSON.stringify(event.state.page) : null;
+      console.log(this.eventStatePage);
+      console.log(!!this.eventStatePage);
+      if (!!this.eventStatePage) {
+        if (this.eventStatePage === this.pageStartHash) {
+          this.showGame();
+        } else if (this.eventStatePage === this.pageRulesHash) {
+          this.showRules();
         }
+      } else {
+        this.showMainPage();
       }
     }
     setLocation(curLoc){
