@@ -59,6 +59,7 @@
   let over = 0;
   let booms = [];
   const backMusic = document.querySelector('#mus-back');
+  let exploreSound = null;
 ///--
 
 class Boom {
@@ -210,6 +211,7 @@ function createBooms(x,y,vx,vy){
   class Enemies {
     constructor(){
       let _this = this;
+      this.sound = null;
       this.x = getRandom(50,W-50);
       this.y = getRandom(-40,-30);
       this.w = imgEnem.width;
@@ -249,6 +251,23 @@ function createBooms(x,y,vx,vy){
     update(){
       this.x += this.vx;
       this.y += this.vy;
+    }
+  }
+
+  class Sound {
+    constructor(src) {
+      this.sound = document.createElement("audio");
+      this.sound.src = src;
+      this.sound.setAttribute("preload", "auto");
+      this.sound.setAttribute("controls", "none");
+      this.sound.style.display = "none";
+      document.body.appendChild(this.sound);
+    }
+    play() {
+      this.sound.play();
+    }
+    stop(){
+      this.sound.pause();
     }
   }
 
@@ -434,6 +453,8 @@ function createBooms(x,y,vx,vy){
           if (boxCollides(pos, size, pos2, size2)) {
             clearRequestInterval(enem[i].int);
             // Remove the enemy
+            exploreSound = new Sound('./music/explore.mp3');
+            exploreSound.play();
             createBooms(enem[i].x,enem[i].y,enem[i].vx,enem[i].vy);
             enem.splice(i, 1);
             i--;
@@ -573,7 +594,6 @@ function createBooms(x,y,vx,vy){
     quit() {
       this.restartScreen.style.display = 'none';
       window.history.back();
-      window.location.reload();
     }
     restart() {
       cancelRequestAnimFrame(myStart);
@@ -641,6 +661,7 @@ function createBooms(x,y,vx,vy){
     madeRoutingStart() {
       this.myHash = window.location.hash;
       if (!this.myHash || this.myHash === '#' ) {
+        window.location.reload();
         this.showMainPage();
       }
       if (this.myHash === ('#' + this.pageStartHash)) {
@@ -651,19 +672,22 @@ function createBooms(x,y,vx,vy){
       }
     }
     madeRoutingLocation(event) {
-      this.pageStartHash = 'new-game.html';
-      this.pageRulesHash = 'rules';
-      this.eventStatePage = event.state ? event.state.page : null;
+      if (window.protocol !== 'file:') {
+        this.pageStartHash = 'new-game.html';
+        this.pageRulesHash = 'rules';
+        this.eventStatePage = event.state ? event.state.page : null;
 
-      if (!!this.eventStatePage) {
-        if (this.eventStatePage === this.pageStartHash) {
-          this.showGame();
-        } else if (this.eventStatePage === this.pageRulesHash) {
-          this.showRules();
+        if (!!this.eventStatePage) {
+          if (this.eventStatePage === this.pageStartHash) {
+            this.showGame();
+          } else if (this.eventStatePage === this.pageRulesHash) {
+            this.showRules();
+          }
+          else {
+            window.location.reload();
+            this.showMainPage();
+          }
         }
-      } else {
-        window.location.reload();
-        this.showMainPage();
       }
     }
     setLocation(curLoc){
