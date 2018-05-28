@@ -186,6 +186,8 @@ function createBooms(x,y,vx,vy){
       ctx.fillRect(this.x,this.y,this.size*this.sizeRatio,this.size*this.sizeRatio);
       ctx.restore();
     }
+    update(){
+    }
   }
 
 //класс пулек
@@ -638,6 +640,7 @@ function createBooms(x,y,vx,vy){
       window.onpopstate = this.madeRoutingLocation.bind(this);
     }
     validationFrom(event) {
+      event.preventDefault();
       this.nameValue = this.name.value;
       if (!this.nameValue) {
         this.inform.innerHTML = 'The field can\'t be empty';
@@ -646,7 +649,6 @@ function createBooms(x,y,vx,vy){
         this.setLocation(this.pageStartHash);
         this.showGame();
       }
-      event.preventDefault();
     }
     changeLocationRules() {
       this.setLocation(this.pageRulesHash);
