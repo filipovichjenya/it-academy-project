@@ -102,6 +102,18 @@ body {
 .rules-wrapper ul li {
     padding-bottom: 4vh;
 }
+#ScoreName {
+    width: 50%;
+    float: left;
+}
+#ScoreValue {
+    width: 50%;
+    float: right;
+}
+#score{
+    width: 20%;
+    margin-left: 5%;
+}
 @media screen and (max-width: 700px) {
     .main-screen h1 {
         font: 17vw warFont, Arial;
