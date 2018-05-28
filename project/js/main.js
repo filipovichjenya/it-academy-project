@@ -516,7 +516,7 @@ function createBooms(x,y,vx,vy){
   createElementsGame(canvas.width,Stars,stars);
 
   const hero = new MainHero();
-  backMusic = new MySound('./music/Sound_19245.mp3');
+  backMusic = new MySound('./music/flybyno-the-edge-of-the-sky-из-игры-endless-space-2.mp3');
 
   //инициализация картинок и запуск
   function init(){
