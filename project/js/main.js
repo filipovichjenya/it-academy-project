@@ -45,6 +45,8 @@
   let leftPressed = false;
   let spacePressed = false;
   let score = 0;
+  let sortObj = [];
+  let scoreTable = {};
   let currentFrame = 0;
   let gameSpeed = 0;
   let lives = 3;
@@ -458,18 +460,14 @@ function createBooms(x,y,vx,vy){
 
           if (boxCollides(pos, size, pos2, size2)) {
             clearRequestInterval(enem[i].int);
-            // Remove the enemy
             exploreSound = new MySound('./music/explore.mp3');
             exploreSound.play();
             createBooms(enem[i].x,enem[i].y,enem[i].vx,enem[i].vy);
             enem.splice(i, 1);
             i--;
-
-            // Add score
             score += 100;
             //Скорость игры ++
             gameSpeed += 0.1;
-            // Remove the bullet and stop this iteration
             bullets.splice(j, 1);
             break;
           }
@@ -556,6 +554,7 @@ function createBooms(x,y,vx,vy){
     over = 0;
     lives = 3;
     res = new RestartGame;
+    insertScoreTable(res.name.value, score);
     score = 0;
   }
 
@@ -590,7 +589,9 @@ function createBooms(x,y,vx,vy){
   }
 
   class RestartGame {
-    constructor() {
+    constructor() {      
+      this.name = SG.name;
+      this.score = score;
       this.mainHero = new MainHero;
       this.restartScreen = document.querySelector('.restart');
       this.restartButton = document.querySelector('#restart-btn');
@@ -658,7 +659,6 @@ function createBooms(x,y,vx,vy){
       cancelRequestAnimFrame(myStart);
       this.cvs.style.display = 'block';
       this.mainScreen.style.display = 'none';
-      crt = requestInterval(create,3000);
       init();
     }
     showMainPage() {
@@ -679,6 +679,7 @@ function createBooms(x,y,vx,vy){
         this.showMainPage();
       }
       if (this.myHash === ('#' + this.pageStartHash)) {
+        crt = requestInterval(create, 3000);
         this.showGame();
       }
       if (this.myHash === ('#' + this.pageRulesHash)) {
@@ -714,4 +715,76 @@ function createBooms(x,y,vx,vy){
   }
 
   const SG = new StartGame(canvas);
+  getScore();
 
+  //-------сохранение рекордов игры--------//
+var pass = getRandom(1, 9999)
+
+function lockPlayer() {
+  $.ajax({
+    url: "https://fe.it-academy.by/AjaxStringStorage2.php", type: 'POST', cache: false, dataType: 'json',
+    data: { f: 'LOCKGET', n: 'SpaceGame_score', p: pass },
+    success: console.log('ok'), error: errorHandler
+  }
+  );
+}
+function updatePlayer() {
+  $.ajax({
+    url: "https://fe.it-academy.by/AjaxStringStorage2.php", type: 'POST', cache: false, dataType: 'json',
+    data: { f: 'UPDATE', n: 'SpaceGame_score', p: pass, v: JSON.stringify(scoreTable) },
+    success: console.log(scoreTable), error: errorHandler
+  }
+  );
+}
+
+function errorHandler(jqXHR, statusStr, errorStr) {
+  console.log(statusStr + ' ' + errorStr);
+}
+
+function insertScoreTable(name, score) {
+  if (name && name in scoreTable && scoreTable[name] >= score) {
+    return;
+  }
+  if (score < 500 && score < sortObj[sortObj.length - 1][1] && sortObj.length >= 10) {
+    return;
+  }
+  scoreTable[name] = score;
+  lockPlayer();
+  updatePlayer();
+}
+
+
+function insertScore() {
+  $.ajax({
+    url: "https://fe.it-academy.by/AjaxStringStorage2.php", type: 'POST', cache: false, dataType: 'json',
+    data: { f: 'INSERT', n: 'SpaceGame_score', v: JSON.stringify(scoreTable) },
+    success: console.log('рекорды обнулены'), error: errorHandler
+  }
+  );
+}
+function getScore() {
+  $.ajax({
+    url: "https://fe.it-academy.by/AjaxStringStorage2.php", type: 'POST', cache: false, dataType: 'json',
+    data: { f: 'READ', n: 'SpaceGame_score', },
+    success: createTable, error: errorHandler
+  }
+  );
+}
+function createTable(callresult) {
+  scoreTable = JSON.parse(callresult.result);
+  $.each(scoreTable, function (key, value) {
+    sortObj.push([key, value])
+  })
+  sortObj = sortObj.sort(function (a, b) {
+    return b[1] - a[1];
+  });
+  if (sortObj.length > 10) sortObj.length = 10;
+  drawScore();
+}
+
+function drawScore(){
+  $.each(sortObj, function (i, v) {
+    $('#score').append(`<div id="ScoreName">${v[0]}</div><div id="ScoreValue">${v[1]}</div>`)    
+  })
+}
+///--------------------------------------//
