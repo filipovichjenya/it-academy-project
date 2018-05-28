@@ -62,6 +62,7 @@
   let exploreSound = null;
   let gameOverMusic = null;
   let lostLiveSound = null;
+  let boom = null;
 ///--
 
 class Boom {
@@ -109,7 +110,7 @@ class Boom {
 
 
 function createBooms(x,y,vx,vy){
-  var boom = new Boom(x,y,vx,vy);
+  boom = new Boom(x,y,vx,vy);
   booms.push(boom);
 }
 //--
@@ -184,9 +185,6 @@ function createBooms(x,y,vx,vy){
       ctx.fillStyle = this.color;
       ctx.fillRect(this.x,this.y,this.size*this.sizeRatio,this.size*this.sizeRatio);
       ctx.restore();
-    }
-    update(){
-
     }
   }
 
@@ -275,7 +273,6 @@ function createBooms(x,y,vx,vy){
       this.sound.loop = true;
     }
   }
-
 
 
 //класс астеройдов
@@ -368,7 +365,7 @@ function createBooms(x,y,vx,vy){
     };
   }
   const createBullet = throttle((Bullet, bullets, x, y) => {
-    return createElementsGame(1, Bullet, bullets, x, y),createElementsGame(1, Bullet, bullets, x+74, y);
+    return createElementsGame(1, Bullet, bullets, x, y), createElementsGame(1, Bullet, bullets, x+74, y);
   }, 100);
 
 //создание элементов заданного класса, n-количество, usingClass - класс, arrayElements - массив на выходе
@@ -519,13 +516,9 @@ function createBooms(x,y,vx,vy){
   createElementsGame(canvas.width,Stars,stars);
 
   const hero = new MainHero();
-
-  function playSound(music) {
-    music.loop = true;
-    music.play();
-  }
-  //инициализация картинок и запуск
   backMusic = new MySound('./music/Sound_19245.mp3');
+
+  //инициализация картинок и запуск
   function init(){
     imgEnem.src = 'img/Sprites/Ships/spaceShips_001.png';
     imgMainHero.src = 'img/Sprites/Ships/spaceShips_009.png';
@@ -538,8 +531,6 @@ function createBooms(x,y,vx,vy){
     backMusic.play();
     startAnim();
   }
-
-
 
   function gameOver() {
     clearRequestInterval(crt);
