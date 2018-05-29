@@ -460,6 +460,12 @@ function collides(x, y, r, b, x2, y2, r2, b2) {
   return !(r <= x2 || x > r2 ||
     b <= y2 || y > b2);
 }
+function livesEnd() {
+  if (lives < 0) {
+    cancelRequestAnimFrame(myStart);
+    over = 1;
+  }
+}
 
 function boxCollides(pos, size, pos2, size2) {
   return collides(pos[0], pos[1],
@@ -503,7 +509,7 @@ function checkBulletsCollisions() {
   }
 }
 
-function checkHeroColision() {
+function checkShotsCollision() {
   if (shots.length !== 0) {
     for (let i = 0; i < shots.length; i++) {
       let pos = [];
@@ -520,12 +526,12 @@ function checkHeroColision() {
       size2.push(hero.w);
       size2.push(hero.h);
 
-      if (boxCollides(pos, size, pos2, size2) && !lives) {
-        cancelRequestAnimFrame(myStart);
-        over = 1;
-        break;
-      }
-      else if (boxCollides(pos, size, pos2, size2)) {
+      // if (boxCollides(pos, size, pos2, size2) && !lives) {
+      //   cancelRequestAnimFrame(myStart);
+      //   over = 1;
+      //   break;
+      // } else
+      if (boxCollides(pos, size, pos2, size2)) {
         shots.splice(i, 1);
         lostLiveSound = new MySound('./music/crash.mp3');
         lostLiveSound.play();
@@ -536,45 +542,51 @@ function checkHeroColision() {
 }
 
   function checkHeroCollision(){
-    let posEnemy = [];
-    let sizeEnemy = [];
     let posHero = [];
     let sizeHero = [];
+    posHero.push(hero.x);
+    posHero.push(hero.y);
+    sizeHero.push(hero.w);
+    sizeHero.push(hero.h);
     if (enem.length !== 0) {
       for (let i = 0; i < enem.length; i++) {
+        let posEnemy = [];
+        let sizeEnemy = [];
         posEnemy.push(enem[i].x);
         posEnemy.push(enem[i].y);
         sizeEnemy.push(enem[i].w);
         sizeEnemy.push(enem[i].h);
 
-        posHero.push(hero.x);
-        posHero.push(hero.y);
-        sizeHero.push(hero.w);
-        sizeHero.push(hero.h);
-
+        // if (boxCollides(posEnemy, sizeEnemy, posHero, sizeHero) && !lives) {
+        //   cancelRequestAnimFrame(myStart);
+        //   over = 1;
+        //   break;
+        // } else
         if(boxCollides(posEnemy, sizeEnemy, posHero, sizeHero)){
+          clearRequestInterval(enem[i].int);
           enem.splice(i, 1);
           lostLiveSound = new MySound('./music/crash.mp3');
           lostLiveSound.play();
           lives--;
+          i--;
+          break;
         }
       }
     }
     for (let j = 0; j < asteroidsArray.length; j++) {
-      let pos3 = [];
-      pos3.push(asteroidsArray[j].x);
-      pos3.push(asteroidsArray[j].y);
-      let size3 = [];
-      size3.push(asteroidsArray[j].w);
-      size3.push(asteroidsArray[j].h);
+      let posAster = [];
+      posAster.push(asteroidsArray[j].x);
+      posAster.push(asteroidsArray[j].y);
+      let sizeAster = [];
+      sizeAster.push(asteroidsArray[j].w);
+      sizeAster.push(asteroidsArray[j].h);
 
-      if(boxCollides(pos, size, posHero, sizeHero)){
-        enem.splice(i, 1);
-        lostLiveSound = new MySound('./music/crash.mp3');
-        lostLiveSound.play();
-        lives--;
+      if(boxCollides(posHero, sizeHero, posAster, sizeAster)){
+        lives = -1;
+        break;
       }
     }
+
   }
 
 //создание элементов игры
@@ -656,7 +668,9 @@ function startAnim() {
   currentFrame > 6 ? currentFrame = 0 : currentFrame++;
   myStart = requestAnimFrame(startAnim);
   checkBulletsCollisions();
-  checkHeroColision();
+  checkShotsCollision();
+  checkHeroCollision();
+  livesEnd();
   if (over === 1) gameOver();
 }
 
@@ -790,7 +804,7 @@ const SG = new StartGame(canvas);
 getScore();
 
 //-------сохранение рекордов игры--------//
-var pass = getRandom(1, 9999)
+let pass = getRandom(1, 9999);
 function lockPlayer() {
   $.ajax({
     url: "https://fe.it-academy.by/AjaxStringStorage2.php", type: 'POST', cache: false, dataType: 'json',
