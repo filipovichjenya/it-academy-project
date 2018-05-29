@@ -46,8 +46,9 @@ body {
     border-radius: 5px;
 }
 .btn {
+    max-height: 54px;
     cursor: pointer;
-    padding: 2%;
+    padding: 9px;
     margin: 1%;
     max-width: 150px;
     width: 100%;
@@ -113,6 +114,11 @@ body {
     max-width: 320px;
     width: 100%;
     margin-left: 1%;
+}
+.bottom-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
 }
 @media screen and (max-width: 700px) {
     .main-screen h1 {
