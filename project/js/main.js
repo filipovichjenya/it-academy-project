@@ -718,7 +718,8 @@ function createBooms(x,y,vx,vy){
   getScore();
 
   //-------сохранение рекордов игры--------//
-var pass = getRandom(1, 9999)
+
+let pass = getRandom(1, 9999);
 
 function lockPlayer() {
   $.ajax({
@@ -759,22 +760,20 @@ function insertScore() {
     url: "https://fe.it-academy.by/AjaxStringStorage2.php", type: 'POST', cache: false, dataType: 'json',
     data: { f: 'INSERT', n: 'SpaceGame_score', v: JSON.stringify(scoreTable) },
     success: console.log('рекорды обнулены'), error: errorHandler
-  }
-  );
+  });
 }
 function getScore() {
   $.ajax({
     url: "https://fe.it-academy.by/AjaxStringStorage2.php", type: 'POST', cache: false, dataType: 'json',
     data: { f: 'READ', n: 'SpaceGame_score', },
     success: createTable, error: errorHandler
-  }
-  );
+  });
 }
 function createTable(callresult) {
   scoreTable = JSON.parse(callresult.result);
   $.each(scoreTable, function (key, value) {
     sortObj.push([key, value])
-  })
+  });
   sortObj = sortObj.sort(function (a, b) {
     return b[1] - a[1];
   });
