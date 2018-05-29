@@ -44,6 +44,7 @@ body {
     font-size: 18px;
     font-weight: bold;
     border-radius: 5px;
+    color: #fff;
 }
 .btn {
     max-height: 54px;
@@ -83,7 +84,7 @@ body {
     border-radius: 4px;
     padding: 10px;
     text-align: center;
-    color:white;
+    color: #fff;
 }
 .restart .my-score {
     padding: 4%;
