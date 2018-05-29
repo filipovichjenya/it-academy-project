@@ -50,7 +50,7 @@ let sortObj = [];
 let scoreTable = {};
 let currentFrame = 0;
 let gameSpeed = 0;
-let lives = 3;
+let lives = 0;
 let crt;
 let argsImg = {
   args1: [1113, 485, 16, 118, -32.5, 0, 14, 70],
@@ -671,7 +671,7 @@ class RestartGame {
     this.restartScreen.style.display = 'block';
     this.youScore = document.createElement('p');
     this.youScore.className = 'my-score';
-    this.youScore.innerHTML = `Your score: ${score}`;
+    this.youScore.innerHTML = `Ваш результат: ${score}`;
     this.restartScreen.insertBefore(this.youScore, this.restartButton);
     this.quitButton.addEventListener('click', this.quit.bind(this));
     this.restartButton.addEventListener('click', this.restart.bind(this));
@@ -716,10 +716,11 @@ class StartGame {
     event.preventDefault();
     this.nameValue = this.name.value;
     if (!this.nameValue) {
-      this.inform.innerHTML = 'The field can\'t be empty';
+      this.inform.innerHTML = 'Поле не должно быть пустым!';
       this.form.insertBefore(this.inform, this.startButton);
     } else if (this.nameValue) {
       this.setLocation(this.pageStartHash);
+      crt = requestInterval(create, 3000);      
       this.showGame();
     }
   }
@@ -751,7 +752,6 @@ class StartGame {
       this.showMainPage();
     }
     if (this.myHash === ('#' + this.pageStartHash)) {
-      crt = requestInterval(create, 3000);
       this.showGame();
     }
     if (this.myHash === ('#' + this.pageRulesHash)) {
