@@ -369,7 +369,7 @@ class MainHero {
     if (spacePressed) {
       spacePressed = false;
       createBullet(Bullet, bullets, this.x + this.w / 6, this.y);
-     
+
     }
   };
 }
@@ -698,8 +698,22 @@ function startAnim() {
 
 
   ctx.font = 'bold 30px Arial';
-  ctx.fillText(score, 100, 25);
-  ctx.fillText(lives, 100, 70);
+  ctx.fillText(`Ваш результат!  ${score}`, 50, 50);
+  switch (lives) {
+    case 3:
+      ctx.drawImage(imgMainHero, 50, 60, imgMainHero.width / 1.5, imgMainHero.height / 1.5)
+      ctx.drawImage(imgMainHero, 100, 60, imgMainHero.width / 1.5, imgMainHero.height / 1.5)
+      ctx.drawImage(imgMainHero, 150, 60, imgMainHero.width / 1.5, imgMainHero.height / 1.5)
+      break;
+    case 2:
+      ctx.drawImage(imgMainHero, 50, 60, imgMainHero.width / 1.5, imgMainHero.height / 1.5)
+      ctx.drawImage(imgMainHero, 100, 60, imgMainHero.width / 1.5, imgMainHero.height / 1.5)
+      break;
+    case 1:
+      ctx.drawImage(imgMainHero, 50, 60, imgMainHero.width / 1.5, imgMainHero.height / 1.5)
+      break;
+      
+  }
   currentFrame > 6 ? currentFrame = 0 : currentFrame++;
   myStart = requestAnimFrame(startAnim);
   checkBulletsCollisions();
