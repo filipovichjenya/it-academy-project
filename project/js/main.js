@@ -535,6 +535,48 @@ function checkHeroColision() {
   }
 }
 
+  function checkHeroCollision(){
+    let posEnemy = [];
+    let sizeEnemy = [];
+    let posHero = [];
+    let sizeHero = [];
+    if (enem.length !== 0) {
+      for (let i = 0; i < enem.length; i++) {
+        posEnemy.push(enem[i].x);
+        posEnemy.push(enem[i].y);
+        sizeEnemy.push(enem[i].w);
+        sizeEnemy.push(enem[i].h);
+
+        posHero.push(hero.x);
+        posHero.push(hero.y);
+        sizeHero.push(hero.w);
+        sizeHero.push(hero.h);
+
+        if(boxCollides(posEnemy, sizeEnemy, posHero, sizeHero)){
+          enem.splice(i, 1);
+          lostLiveSound = new MySound('./music/crash.mp3');
+          lostLiveSound.play();
+          lives--;
+        }
+      }
+    }
+    for (let j = 0; j < asteroidsArray.length; j++) {
+      let pos3 = [];
+      pos3.push(asteroidsArray[j].x);
+      pos3.push(asteroidsArray[j].y);
+      let size3 = [];
+      size3.push(asteroidsArray[j].w);
+      size3.push(asteroidsArray[j].h);
+
+      if(boxCollides(pos, size, posHero, sizeHero)){
+        enem.splice(i, 1);
+        lostLiveSound = new MySound('./music/crash.mp3');
+        lostLiveSound.play();
+        lives--;
+      }
+    }
+  }
+
 //создание элементов игры
 function create() {
   createElementsGame(getRandom(1, 1 + Math.floor(gameSpeed)), Enemies, enem);
@@ -665,7 +707,7 @@ class StartGame {
     this.rulesButton.addEventListener('click', this.changeLocationRules.bind(this));
     this.inform.innerHTML = '';
     this.inform.className = 'inform';
-    this.pageStartHash = 'new-game.html';
+    this.pageStartHash = 'new-game';
     this.pageRulesHash = 'rules';
     window.onhashchange = this.madeRoutingStart.bind(this);
     window.onpopstate = this.madeRoutingLocation.bind(this);
@@ -719,7 +761,7 @@ class StartGame {
   madeRoutingLocation(event) {
     console.log(window.window.location.protocol);
     if (window.location.protocol !== 'file:') {
-      this.pageStartHash = 'new-game.html';
+      this.pageStartHash = 'new-game';
       this.pageRulesHash = 'rules';
       this.eventStatePage = event.state ? event.state.page : null;
 
