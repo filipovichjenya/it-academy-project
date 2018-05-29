@@ -24,8 +24,8 @@ body {
     color: #fff;
 }
 .main-screen h1 {
-    padding-top: 10vh;
-    padding-bottom: 10vh;
+    padding-top: 5vh;
+    padding-bottom: 1vh;
     text-align: center;
     font: 17vh warFont, Arial;
 }
@@ -37,7 +37,6 @@ body {
     margin: auto;
     max-width: 709px;
     width: 100%;
-    height: 35vh;
 }
 .main-screen .start .name {
     width: 90%;
@@ -47,8 +46,9 @@ body {
     border-radius: 5px;
 }
 .btn {
+    max-height: 54px;
     cursor: pointer;
-    padding: 2%;
+    padding: 9px;
     margin: 1%;
     max-width: 150px;
     width: 100%;
@@ -111,8 +111,14 @@ body {
     float: right;
 }
 #score{
-    width: 20%;
-    margin-left: 5%;
+    max-width: 320px;
+    width: 100%;
+    margin-left: 1%;
+}
+.bottom-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
 }
 @media screen and (max-width: 700px) {
     .main-screen h1 {
