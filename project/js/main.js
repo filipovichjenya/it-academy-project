@@ -50,7 +50,7 @@ let sortObj = [];
 let scoreTable = {};
 let currentFrame = 0;
 let gameSpeed = 0;
-let lives = 0;
+let lives = 3;
 let crt;
 let argsImg = {
   args1: [1113, 485, 16, 118, -32.5, 0, 14, 70],
@@ -65,7 +65,15 @@ let backMusic = null;
 let exploreSound = null;
 let gameOverMusic = null;
 let lostLiveSound = null;
+let buletSound = null;
+let missSound = null;
 let boom = null;
+imgEnem.src = 'img/Sprites/Ships/spaceShips_001.png';
+imgMainHero.src = 'img/Sprites/Ships/spaceShips_009.png';
+imgShots.src = 'img/Sprites/Missiles/spaceMissiles_037.png';
+sprites.src = 'img/sprites.png';
+imgAsteroids.src = 'img/Sprites/Meteors/spaceMeteors_001.png';
+smog.src = 'img/a.png';
 ///--
 
 class Boom {
@@ -239,8 +247,8 @@ class Enemies {
     this.sound = null;
     this.x = getRandom(50, W - 50);
     this.y = getRandom(-40, -30);
-    this.w = imgEnem.width;
-    this.h = imgEnem.height;
+    this.w = 71;
+    this.h = 53;
     this.vx = getRandom(-1, 1);
     this.vy = getRandom(.7, 1.1);
     this.int = requestInterval(
@@ -312,9 +320,7 @@ class Asteroids {
   }
   draw() {
     ctx.save();
-    //ctx.translate(this.x,this.y);
-    //ctx.rotate(180 * Math.PI / 180);
-    ctx.drawImage(imgAsteroids, this.x, this.y, imgAsteroids.width * this.sizeObject, imgAsteroids.height * this.sizeObject);
+    ctx.drawImage(imgAsteroids, this.x, this.y, this.w + 25, this.h + 25);
     ctx.restore();
   }
   update() {
@@ -329,7 +335,7 @@ class MainHero {
     this.h = 82;
     this.x = W / 2;
     this.y = (H - this.h - 35);
-    this.speed = 7 + gameSpeed / 2;
+    this.speed = 10 + gameSpeed / 2;
   }
   draw() {
     ctx.save();
@@ -363,6 +369,7 @@ class MainHero {
     if (spacePressed) {
       spacePressed = false;
       createBullet(Bullet, bullets, this.x + this.w / 6, this.y);
+     
     }
   };
 }
@@ -374,7 +381,7 @@ class Bullet {
     this.h = 7;
     this.x = x;
     this.y = y;
-    this.speed = 7;
+    this.speed = 10;
   }
   draw() {
     ctx.save();
@@ -390,8 +397,11 @@ class Bullet {
   };
 }
 const createBullet = throttle((Bullet, bullets, x, y) => {
+  buletSound = new MySound('./music/laser.ogg');
+  buletSound.play();
   return createElementsGame(1, Bullet, bullets, x, y), createElementsGame(1, Bullet, bullets, x + 74, y);
-}, 100);
+
+}, 300);
 
 //создание элементов заданного класса, n-количество, usingClass - класс, arrayElements - массив на выходе
 function createElementsGame(n, usingClass, arrayElements, ...rest) {
@@ -509,6 +519,34 @@ function checkBulletsCollisions() {
   }
 }
 
+function checkBulletsCollisionsAsteroids() {
+  if (asteroidsArray.length !== 0 && bullets.length !== 0) {
+    for (let i = 0; i < asteroidsArray.length; i++) {
+      let pos = [];
+      pos.push(asteroidsArray[i].x);
+      pos.push(asteroidsArray[i].y);
+      let size = [];
+      size.push(asteroidsArray[i].w);
+      size.push(asteroidsArray[i].h);
+      for (let j = 0; j < bullets.length; j++) {
+        let pos2 = [];
+        pos2.push(bullets[j].x);
+        pos2.push(bullets[j].y);
+        let size2 = [];
+        size2.push(bullets[j].w);
+        size2.push(bullets[j].h);
+
+        if (boxCollides(pos, size, pos2, size2)) {
+          missSound = new MySound('./music/laser2.ogg');
+          missSound.play();
+          bullets.splice(j, 1);
+          break;
+        }
+      }
+    }
+  }
+}
+
 function checkShotsCollision() {
   if (shots.length !== 0) {
     for (let i = 0; i < shots.length; i++) {
@@ -533,7 +571,7 @@ function checkShotsCollision() {
       // } else
       if (boxCollides(pos, size, pos2, size2)) {
         shots.splice(i, 1);
-        lostLiveSound = new MySound('./music/crash.mp3');
+        lostLiveSound = new MySound('./music/crash.ogg');
         lostLiveSound.play();
         lives--;
       }
@@ -541,53 +579,55 @@ function checkShotsCollision() {
   }
 }
 
-  function checkHeroCollision(){
-    let posHero = [];
-    let sizeHero = [];
-    posHero.push(hero.x);
-    posHero.push(hero.y);
-    sizeHero.push(hero.w);
-    sizeHero.push(hero.h);
-    if (enem.length !== 0) {
-      for (let i = 0; i < enem.length; i++) {
-        let posEnemy = [];
-        let sizeEnemy = [];
-        posEnemy.push(enem[i].x);
-        posEnemy.push(enem[i].y);
-        sizeEnemy.push(enem[i].w);
-        sizeEnemy.push(enem[i].h);
+function checkHeroCollision() {
+  let posHero = [];
+  let sizeHero = [];
+  posHero.push(hero.x);
+  posHero.push(hero.y);
+  sizeHero.push(hero.w);
+  sizeHero.push(hero.h);
+  if (enem.length !== 0) {
+    for (let i = 0; i < enem.length; i++) {
+      let posEnemy = [];
+      let sizeEnemy = [];
+      posEnemy.push(enem[i].x);
+      posEnemy.push(enem[i].y);
+      sizeEnemy.push(enem[i].w);
+      sizeEnemy.push(enem[i].h);
 
-        // if (boxCollides(posEnemy, sizeEnemy, posHero, sizeHero) && !lives) {
-        //   cancelRequestAnimFrame(myStart);
-        //   over = 1;
-        //   break;
-        // } else
-        if(boxCollides(posEnemy, sizeEnemy, posHero, sizeHero)){
-          clearRequestInterval(enem[i].int);
-          enem.splice(i, 1);
-          lostLiveSound = new MySound('./music/crash.mp3');
-          lostLiveSound.play();
-          lives--;
-          i--;
-          break;
-        }
-      }
-    }
-    for (let j = 0; j < asteroidsArray.length; j++) {
-      let posAster = [];
-      posAster.push(asteroidsArray[j].x);
-      posAster.push(asteroidsArray[j].y);
-      let sizeAster = [];
-      sizeAster.push(asteroidsArray[j].w);
-      sizeAster.push(asteroidsArray[j].h);
-
-      if(boxCollides(posHero, sizeHero, posAster, sizeAster)){
-        lives = -1;
+      // if (boxCollides(posEnemy, sizeEnemy, posHero, sizeHero) && !lives) {
+      //   cancelRequestAnimFrame(myStart);
+      //   over = 1;
+      //   break;
+      // } else
+      if (boxCollides(posEnemy, sizeEnemy, posHero, sizeHero)) {
+        clearRequestInterval(enem[i].int);
+        enem.splice(i, 1);
+        lostLiveSound = new MySound('./music/crash.ogg');
+        lostLiveSound.play();
+        lives--;
+        i--;
         break;
       }
     }
-
   }
+  for (let j = 0; j < asteroidsArray.length; j++) {
+    let posAster = [];
+    posAster.push(asteroidsArray[j].x);
+    posAster.push(asteroidsArray[j].y);
+    let sizeAster = [];
+    sizeAster.push(asteroidsArray[j].w);
+    sizeAster.push(asteroidsArray[j].h);
+
+    if (boxCollides(posHero, sizeHero, posAster, sizeAster)) {
+      lostLiveSound = new MySound('./music/crash.ogg');
+      lostLiveSound.play();
+      lives--;
+      break;
+    }
+  }
+
+}
 
 //создание элементов игры
 function create() {
@@ -595,19 +635,14 @@ function create() {
   createElementsGame(getRandom(0, 3), Asteroids, asteroidsArray);
 }
 createElementsGame(canvas.width, Stars, stars);
-createElementsGame(canvas.width/15, StarsMove, starsMove);
+createElementsGame(canvas.width / 15, StarsMove, starsMove);
 
 const hero = new MainHero();
-backMusic = new MySound('./music/flybyno-the-edge-of-the-sky-из-игры-endless-space-2.mp3');
+backMusic = new MySound('./music/fon.mp3');
 
 //инициализация картинок и запуск
 function init() {
-  imgEnem.src = 'img/Sprites/Ships/spaceShips_001.png';
-  imgMainHero.src = 'img/Sprites/Ships/spaceShips_009.png';
-  imgShots.src = 'img/Sprites/Missiles/spaceMissiles_037.png';
-  sprites.src = 'img/sprites.png';
-  imgAsteroids.src = 'img/Sprites/Meteors/spaceMeteors_001.png';
-  smog.src = 'img/a.png';
+
 
   backMusic.enableLoop();
   backMusic.play();
@@ -670,6 +705,7 @@ function startAnim() {
   checkBulletsCollisions();
   checkShotsCollision();
   checkHeroCollision();
+  checkBulletsCollisionsAsteroids()
   livesEnd();
   if (over === 1) gameOver();
 }
@@ -734,7 +770,7 @@ class StartGame {
       this.form.insertBefore(this.inform, this.startButton);
     } else if (this.nameValue) {
       this.setLocation(this.pageStartHash);
-      crt = requestInterval(create, 3000);      
+      crt = requestInterval(create, 3000);
       this.showGame();
     }
   }
