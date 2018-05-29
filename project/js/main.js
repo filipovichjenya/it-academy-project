@@ -678,6 +678,7 @@ class StartGame {
       this.form.insertBefore(this.inform, this.startButton);
     } else if (this.nameValue) {
       this.setLocation(this.pageStartHash);
+      crt = requestInterval(create, 3000);      
       this.showGame();
     }
   }
@@ -709,7 +710,6 @@ class StartGame {
       this.showMainPage();
     }
     if (this.myHash === ('#' + this.pageStartHash)) {
-      crt = requestInterval(create, 3000);
       this.showGame();
     }
     if (this.myHash === ('#' + this.pageRulesHash)) {
