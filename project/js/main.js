@@ -253,7 +253,7 @@ class Enemies {
     this.vy = getRandom(.7, 1.1);
     this.int = requestInterval(
       function () {
-        let i = new Shot(_this.x + _this.w / 2 - 21.5, _this.y + _this.h / 1.8);
+        let i = new Shot(_this.x + _this.w / 2 - 4, _this.y + _this.h / 1.8);
         shots.push(i);
       }, getRandom(2000, 4000)
     )
